@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (with cache mount for faster builds)
+RUN npm ci --prefer-offline --no-audit
 
 # Copy source code
 COPY . .
@@ -24,7 +24,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install production dependencies only
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --only=production --prefer-offline --no-audit && npm cache clean --force
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
