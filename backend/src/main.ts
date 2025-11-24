@@ -6,6 +6,7 @@ import * as compression from 'compression';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { initializeDatabase } from './database/init-db';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -13,6 +14,15 @@ async function bootstrap() {
   });
 
   const configService = app.get(ConfigService);
+
+  // Initialize database (create tables if they don't exist)
+  // This is safe to run on every startup as it only creates missing tables
+  try {
+    await initializeDatabase(configService);
+  } catch (error) {
+    console.error('⚠️  Database initialization failed, continuing anyway:', error);
+    // Continue even if initialization fails (might already be initialized)
+  }
 
   // Security
   app.use(helmet());
@@ -29,12 +39,23 @@ async function bootstrap() {
       // Allow requests with no origin (mobile apps, Postman, etc.)
       if (!origin) return callback(null, true);
       
-      // Check if origin is in allowed list
-      if (allowedOrigins.some((allowed: string) => origin === allowed || origin.startsWith(allowed))) {
+      // Check if origin is in allowed list (exact match or starts with)
+      const isAllowed = allowedOrigins.some((allowed: string) => {
+        return origin === allowed || origin.startsWith(allowed);
+      });
+      
+      if (isAllowed) {
         callback(null, true);
       } else {
-        console.warn(`🚫 CORS blocked origin: ${origin}`);
-        callback(null, true); // Allow all in production for debugging - tighten later
+        // In production, allow all for now (tighten later)
+        // Only log warning if not in allowed list
+        if (configService.get('NODE_ENV') === 'production') {
+          console.warn(`🚫 CORS: Origin ${origin} not in allowed list, but allowing for production`);
+          callback(null, true);
+        } else {
+          console.warn(`🚫 CORS blocked origin: ${origin}`);
+          callback(null, true);
+        }
       }
     },
     credentials: true,

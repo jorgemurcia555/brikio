@@ -32,11 +32,13 @@ import { PdfModule } from './modules/pdf/pdf.module';
         const databaseUrl = configService.get('DATABASE_URL');
         
         if (databaseUrl) {
+          // Allow synchronize in production if ENABLE_SYNC is set (for initial setup)
+          const enableSync = configService.get('ENABLE_SYNC') === 'true' || configService.get('NODE_ENV') !== 'production';
           return {
             type: 'postgres',
             url: databaseUrl,
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: configService.get('NODE_ENV') !== 'production',
+            synchronize: enableSync,
             logging: configService.get('NODE_ENV') === 'development',
             migrations: [__dirname + '/database/migrations/**/*{.ts,.js}'],
             ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
