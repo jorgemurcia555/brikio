@@ -88,7 +88,7 @@ export function DashboardPage() {
           {t('dashboard.recentProjects.title')}
         </h2>
         <div className="space-y-3">
-          {recentProjects?.data?.length > 0 ? (
+          {recentProjects?.data && recentProjects.data.length > 0 ? (
             recentProjects.data.slice(0, 5).map((project: any) => (
               <div
                 key={project.id}

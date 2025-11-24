@@ -48,7 +48,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         className={clsx(baseStyles, variants[variant], paddings[padding], className)}
         {...motionProps}
-        {...props}
+        {...(props as any)}
       >
         {children}
       </Component>

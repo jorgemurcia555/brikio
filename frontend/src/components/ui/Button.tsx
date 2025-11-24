@@ -52,7 +52,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
         className={clsx(baseStyles, variants[variant], sizes[size], className)}
         disabled={disabled || loading}
-        {...props}
+        {...(props as any)}
       >
         {loading && <Loader2 className="w-4 h-4 animate-spin" />}
         {!loading && icon && icon}
