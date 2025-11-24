@@ -1,0 +1,26 @@
+{
+  "name": "Brikio - Smart Construction Estimates",
+  "short_name": "Brikio",
+  "description": "Calculate materials, quantities and costs for construction projects instantly",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF7EA",
+  "theme_color": "#F15A24",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logos/brikio-logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "screenshots": []
+}
+

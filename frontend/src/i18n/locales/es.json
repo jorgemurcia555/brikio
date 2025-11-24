@@ -1,0 +1,467 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "create": "Crear",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "back": "Volver"
+  },
+  "nav": {
+    "tagline": "Presupuestos Inteligentes",
+    "features": "Características",
+    "templates": "Plantillas",
+    "workflow": "Flujo",
+    "pricing": "Precios",
+    "signIn": "Ingresar",
+    "tryNow": "Probar ahora"
+  },
+  "hero": {
+    "badge": "Sin registro · Empieza a crear ahora",
+    "title": "Software de",
+    "titleHighlight": "presupuestos de obra",
+    "titleEnd": "para constructores",
+    "subtitle": "Crea presupuestos de construcción precisos con cálculos automáticos de materiales, genera PDFs profesionales y comparte enlaces seguros—todo sin registrarte. Regístrate solo cuando quieras descargar.",
+    "ctaPrimary": "Empezar a crear ahora",
+    "ctaSecondary": "Ver demo",
+    "noCreditCard": "Sin registro · Sin tarjeta · Prueba todo primero",
+    "mascotTitle": "Plan Maestro listo",
+    "mascotSubtitle": "Visualización amigable tipo poster vintage"
+  },
+  "socialProof": {
+    "googleReviews": "Google Reviews",
+    "g2Crowd": "G2 Crowd",
+    "capterra": "Capterra",
+    "trustpilot": "Trustpilot"
+  },
+  "features": {
+    "automated": {
+      "title": "Cálculo automático de materiales",
+      "description": "Ingresa metros cuadrados o lineales y BudgetApp calcula cantidades, factores de desperdicio y rendimientos automáticamente."
+    },
+    "pdf": {
+      "title": "PDFs listos para clientes",
+      "description": "Exporta PDFs profesionales con tu marca y habilita enlaces públicos seguros para revisión y aprobación del cliente."
+    },
+    "kpis": {
+      "title": "Dashboard de KPIs de construcción",
+      "description": "Rastrea tasas de aprobación, márgenes de beneficio, costo vs. precio final y más—todo visible para tomar mejores decisiones de negocio."
+    }
+  },
+  "templates": {
+    "title": "Plantillas de presupuesto listas para usar",
+    "subtitle": "Elige partidas populares o crea las tuyas. Cada plantilla incluye fórmula, materiales y mano de obra sugerida.",
+    "blockWall": "Muro de block",
+    "blockWallMetric": "Desde $145/m²",
+    "finePlaster": "Repello fino",
+    "finePlasterMetric": "Rinde 7 m² / saco",
+    "metalRoof": "Techo metálico",
+    "metalRoofMetric": "Entrega en 48h",
+    "ceramicFloor": "Piso cerámico",
+    "ceramicFloorMetric": "Incluye adhesivo",
+    "viewDetail": "Ver detalle"
+  },
+  "howItWorks": {
+    "title": "Crea un presupuesto de construcción en 5 pasos",
+    "subtitle": "Mismo flujo intuitivo que los diseñadores usan en Venngage, pero con el toque cálido de BudgetApp.",
+    "step1": "Crea proyecto y áreas",
+    "step2": "Selecciona plantillas",
+    "step3": "Carga tus precios",
+    "step4": "Revisa totales",
+    "step5": "Exporta o comparte"
+  },
+  "essentials": {
+    "title": "5 secciones esenciales en cada presupuesto",
+    "subtitle": "Siguiendo mejores prácticas similares a las guías de Venngage, estas secciones mantienen tu cotización clara y profesional.",
+    "header": {
+      "title": "Cabecera",
+      "description": "Tu logo, datos de empresa y número de presupuesto secuencial."
+    },
+    "clientData": {
+      "title": "Datos del cliente",
+      "description": "Nombre, dirección e información de contacto del destinatario."
+    },
+    "dateValidity": {
+      "title": "Fecha y vigencia",
+      "description": "Cuándo se emite el presupuesto y por cuánto tiempo es válido."
+    },
+    "lineItems": {
+      "title": "Partidas",
+      "description": "Descripciones, cantidades, unidades y rendimientos de materiales."
+    },
+    "totals": {
+      "title": "Totales claros",
+      "description": "Subtotal, impuestos, descuentos y monto final a pagar."
+    }
+  },
+  "caseStudies": {
+    "olea": {
+      "name": "Constructora Olea Sur",
+      "result": "↓45% tiempo preparando propuestas",
+      "detail": "De 3h por presupuesto a solo 25 minutos."
+    },
+    "cafe": {
+      "name": "Reformas Café+Arcilla",
+      "result": "↑32% tasa de aprobación",
+      "detail": "La presentación amigable genera confianza instantánea con clientes."
+    },
+    "maiz": {
+      "name": "Habitacionales Maíz",
+      "result": "↑18% margen promedio",
+      "detail": "El módulo IA sugirió alternativas de materiales más rentables."
+    }
+  },
+  "testimonials": {
+    "title": "Voces que confían",
+    "subtitle": "Constructores reales compartiendo resultados reales.",
+    "carlos": {
+      "name": "Carlos Méndez",
+      "role": "Constructor independiente",
+      "quote": "El diseño cálido del PDF hizo que mis clientes confiaran al instante. Presupuestos listos en 12 minutos."
+    },
+    "ana": {
+      "name": "Ana Rodríguez",
+      "role": "Gerente de proyectos",
+      "quote": "La IA detectó acabados faltantes que olvidé incluir. Evité retrabajo y mantuve al equipo alineado."
+    },
+    "miguel": {
+      "name": "Miguel Torres",
+      "role": "Director comercial",
+      "quote": "Migramos de Excel a BudgetApp y ganamos 3 días hábiles al mes. El look vintage conquista clientes."
+    }
+  },
+  "pricing": {
+    "title": "Precios simples. Paga solo cuando descargues.",
+    "subtitle": "Prueba todo sin registrarte. Regístrate solo cuando quieras exportar tu presupuesto.",
+    "trial": {
+      "name": "Prueba primero",
+      "price": "$0",
+      "duration": "Usa la app completa",
+      "features": {
+        "create": "Crea presupuestos ilimitados",
+        "templates": "Accede a todas las plantillas",
+        "calculate": "Cálculos automáticos",
+        "preview": "Previsualiza todo",
+        "noDownload": "Regístrate para descargar"
+      },
+      "cta": "Empezar ahora",
+      "badge": "Sin registro"
+    },
+    "basic": {
+      "name": "Básico",
+      "price": "$7",
+      "duration": "/mes después de 7 días gratis",
+      "features": {
+        "everything": "Todo lo de Prueba primero",
+        "download": "Descarga PDFs ilimitados",
+        "templates": "Plantillas personalizadas",
+        "support": "Soporte por email"
+      },
+      "cta": "Empezar 7 días gratis",
+      "badge": "Popular",
+      "note": "Después de 7 días, $7/mes. Cancela cuando quieras."
+    },
+    "premium": {
+      "name": "Premium",
+      "price": "$18",
+      "duration": "/mes después de 7 días gratis",
+      "features": {
+        "everything": "Todo lo de Básico",
+        "ai": "Asistente IA (powered by GPT)",
+        "optimization": "Optimización de costos con IA",
+        "suggestions": "Sugerencias de materiales con IA",
+        "review": "Revisión de coherencia con IA",
+        "support": "Soporte prioritario 24/7"
+      },
+      "cta": "Empezar 7 días gratis",
+      "badge": "Mejor valor",
+      "note": "Después de 7 días, $18/mes. Cancela cuando quieras."
+    }
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "subtitle": "Respuestas inspiradas en las guías educativas de Venngage.",
+    "q1": {
+      "question": "¿Necesito habilidades de diseño?",
+      "answer": "No. Nuestro editor funciona con arrastrar y soltar. La estética vintage viene preconfigurada."
+    },
+    "q2": {
+      "question": "¿Puedo duplicar presupuestos?",
+      "answer": "Sí. Duplica, ajusta métricas y envía versiones personalizadas en minutos."
+    },
+    "q3": {
+      "question": "¿Qué pasa si cancelo?",
+      "answer": "Tu cuenta baja al plan gratuito sin perder proyectos ni plantillas."
+    }
+  },
+  "cta": {
+    "title": "¿Listo para presupuestos hechos con cuidado?",
+    "subtitle": "Crece con una herramienta inspirada en Venngage pero hecha para equipos de construcción latinoamericanos. Setup en 2 minutos.",
+    "button": "Crear presupuesto ahora"
+  },
+  "footer": {
+    "copyright": "Hecho con amor y café.",
+    "links": {
+      "features": "Características",
+      "pricing": "Precios",
+      "faq": "FAQ"
+    }
+  },
+  "brand": {
+    "name": "Brikio",
+    "taglineShort": "Presupuestos Inteligentes"
+  },
+  "guestProject": {
+    "header": {
+      "tryMode": "Modo Prueba - Sin registro",
+      "backHome": "Volver al inicio",
+      "signIn": "Ingresar"
+    },
+    "steps": {
+      "project": "Info del Proyecto",
+      "areas": "Definir Áreas",
+      "items": "Agregar Partidas",
+      "preview": "Previsualizar"
+    },
+    "projectInfo": {
+      "title": "Información del Proyecto",
+      "nameLabel": "Nombre del Proyecto",
+      "namePlaceholder": "ej., Renovación Casa 2024",
+      "tip": "💡 **Consejo:** Puedes explorar todas las funciones sin registrarte. Solo te pediremos registro cuando quieras descargar tu presupuesto.",
+      "continue": "Continuar a Áreas",
+      "back": "Atrás"
+    },
+    "areas": {
+      "title": "Definir Áreas",
+      "namePlaceholder": "Nombre del área (ej., Sala de estar)",
+      "addArea": "Agregar Área",
+      "continue": "Continuar a Partidas"
+    },
+    "items": {
+      "title": "Agregar Partidas",
+      "description": "Agrega materiales, mano de obra y servicios a tu presupuesto. Sé tan detallado como necesites.",
+      "headers": {
+        "description": "Descripción",
+        "quantity": "Cantidad",
+        "unit": "Unidad",
+        "price": "Precio Unit.",
+        "total": "Total"
+      },
+      "tooltips": {
+        "description": "ej., Bloques de concreto, Pintura, Mano de obra",
+        "quantity": "Cantidad necesaria (10, 25.5, 100)",
+        "unit": "Unidad de medida (m², sacos, horas, pzas)",
+        "price": "Costo por unidad en $ (12.50, 45.00)"
+      },
+      "placeholders": {
+        "description": "ej., Cemento Portland",
+        "quantity": "10",
+        "unit": "sacos",
+        "price": "12.50"
+      },
+      "addItem": "Agregar Partida",
+      "estimateTotal": "Total del Presupuesto",
+      "previewEstimate": "Previsualizar Presupuesto"
+    },
+    "lineItems": {
+      "title": "Agregar Partidas",
+      "descriptionPlaceholder": "Descripción",
+      "qtyPlaceholder": "Cant.",
+      "unitPlaceholder": "Unidad",
+      "pricePlaceholder": "Precio",
+      "addItem": "Agregar Partida",
+      "continue": "Previsualizar Presupuesto",
+      "backToEdit": "Volver a Editar"
+    },
+    "preview": {
+      "title": "Previsualizar Presupuesto",
+      "downloadPDF": "Descargar PDF",
+      "totalAreas": "Total de Áreas",
+      "totalSqMeters": "Total m²",
+      "table": {
+        "description": "Descripción",
+        "qty": "Cant.",
+        "unit": "Unidad",
+        "price": "Precio",
+        "total": "Total"
+      }
+    },
+    "downloadModal": {
+      "title": "Regístrate para Descargar",
+      "greatWork": "🎉 **¡Excelente trabajo!** Tu presupuesto está listo.",
+      "description": "Para descargar tu PDF profesional y desbloquear funciones ilimitadas, crea una cuenta gratuita ahora. Obtendrás:",
+      "benefits": {
+        "trial": "7 días de prueba gratis (sin tarjeta de crédito)",
+        "downloads": "Descargas ilimitadas de presupuestos",
+        "ai": "Asistente IA Premium",
+        "optimization": "Herramientas de optimización de costos"
+      },
+      "startTrial": "Empezar 7 Días Gratis",
+      "continueEditing": "Continuar Editando"
+    }
+  },
+  "login": {
+    "title": "Iniciar Sesión",
+    "subtitle": "Accede a tu cuenta de {{brandName}}",
+    "email": {
+      "label": "Email",
+      "placeholder": "tu@email.com"
+    },
+    "password": {
+      "label": "Contraseña",
+      "placeholder": "••••••••"
+    },
+    "submit": "Iniciar Sesión",
+    "noAccount": "¿No tienes cuenta?",
+    "signUpLink": "Regístrate gratis",
+    "success": "¡Bienvenido!",
+    "error": "Error al iniciar sesión"
+  },
+  "register": {
+    "title": "Crear Cuenta",
+    "subtitle": "Empieza a usar {{brandName}} hoy",
+    "name": {
+      "label": "Nombre Completo",
+      "placeholder": "Juan Pérez"
+    },
+    "email": {
+      "label": "Email",
+      "placeholder": "tu@email.com"
+    },
+    "company": {
+      "label": "Empresa (opcional)",
+      "placeholder": "Tu Empresa S.A."
+    },
+    "password": {
+      "label": "Contraseña",
+      "placeholder": "••••••••"
+    },
+    "confirmPassword": {
+      "label": "Confirmar Contraseña",
+      "placeholder": "••••••••"
+    },
+    "submit": "Crear Cuenta",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "signInLink": "Inicia sesión",
+    "success": "¡Cuenta creada exitosamente!",
+    "error": "Error al crear la cuenta",
+    "password": {
+      "label": "Contraseña",
+      "placeholder": "••••••••",
+      "helper": "Mínimo 8 caracteres"
+    }
+  },
+  "dashboard": {
+    "welcome": "Bienvenido",
+    "subtitle": "Esto es lo que está pasando con tus proyectos",
+    "stats": {
+      "totalProjects": "Proyectos Totales",
+      "activeEstimates": "Presupuestos Activos",
+      "revenue": "Ingresos",
+      "approvalRate": "Tasa de Aprobación"
+    },
+    "quickActions": {
+      "title": "Acciones Rápidas",
+      "newProject": "Nuevo Proyecto",
+      "newEstimate": "Nuevo Presupuesto",
+      "viewMaterials": "Ver Materiales",
+      "viewReports": "Ver Reportes"
+    },
+    "recentProjects": {
+      "title": "Proyectos Recientes",
+      "viewAll": "Ver Todos",
+      "noProjects": "No hay proyectos aún",
+      "createFirst": "Crea tu primer proyecto para comenzar",
+      "noClient": "Sin cliente"
+    }
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "projects": "Proyectos",
+    "estimates": "Presupuestos",
+    "materials": "Materiales",
+    "clients": "Clientes",
+    "billing": "Facturación",
+    "settings": "Configuración",
+    "signOut": "Cerrar Sesión",
+    "premiumBadge": {
+      "title": "Premium",
+      "description": "IA y funciones avanzadas incluidas"
+    }
+  },
+  "projects": {
+    "title": "Proyectos",
+    "subtitle": "Gestiona todos tus proyectos de construcción",
+    "newProject": "Nuevo Proyecto",
+    "noDescription": "Sin descripción",
+    "areas": "áreas",
+    "loading": "Cargando proyectos...",
+    "empty": {
+      "title": "No hay proyectos aún",
+      "description": "Crea tu primer proyecto para comenzar",
+      "action": "Crear Proyecto"
+    }
+  },
+  "materials": {
+    "title": "Materiales",
+    "subtitle": "Catálogo de materiales para tus presupuestos",
+    "newMaterial": "Nuevo Material",
+    "search": "Buscar materiales...",
+    "category": "Categoría",
+    "unit": "Unidad",
+    "price": "Precio",
+    "stock": "Stock",
+    "loading": "Cargando materiales..."
+  },
+  "clients": {
+    "title": "Clientes",
+    "subtitle": "Gestiona tus clientes y contactos",
+    "addNew": "Agregar Cliente",
+    "addFirst": "Agregar Primer Cliente",
+    "editClient": "Editar Cliente",
+    "search": "Buscar clientes...",
+    "noClients": "No hay clientes aún",
+    "noClientsDesc": "Agrega tu primer cliente para comenzar a gestionar contactos",
+    "projectCount": "{{count}} proyecto",
+    "projectCount_plural": "{{count}} proyectos",
+    "created": "Cliente creado exitosamente",
+    "updated": "Cliente actualizado exitosamente",
+    "deleted": "Cliente eliminado exitosamente",
+    "saveError": "Error al guardar el cliente",
+    "deleteError": "Error al eliminar el cliente",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este cliente?",
+    "form": {
+      "name": "Nombre de Contacto",
+      "namePlaceholder": "Juan Pérez",
+      "companyName": "Nombre de Empresa",
+      "companyNamePlaceholder": "Constructora Ejemplo",
+      "email": "Correo Electrónico",
+      "emailPlaceholder": "juan@ejemplo.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+34 123 456 789",
+      "address": "Dirección",
+      "addressPlaceholder": "Calle Principal 123, Ciudad",
+      "notes": "Notas",
+      "notesPlaceholder": "Notas adicionales sobre el cliente..."
+    }
+  },
+  "billing": {
+    "title": "Facturación",
+    "subtitle": "Gestiona tu suscripción y facturación",
+    "currentPlan": "Plan Actual",
+    "changePlan": "Cambiar Plan",
+    "cancelSubscription": "Cancelar Suscripción",
+    "paymentMethod": "Método de Pago",
+    "addCard": "Agregar Tarjeta",
+    "invoices": "Facturas",
+    "nextBilling": "Próxima fecha de cobro",
+    "trial": {
+      "title": "Prueba Gratuita Activa",
+      "daysLeft": "{{days}} días restantes",
+      "upgradeNow": "Actualizar Ahora"
+    }
+  }
+}
+
