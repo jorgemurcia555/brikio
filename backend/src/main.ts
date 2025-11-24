@@ -19,18 +19,18 @@ async function bootstrap() {
   app.use(compression());
 
   // CORS - Allow multiple origins for production flexibility
-  const frontendUrl = configService.get('FRONTEND_URL');
-  const allowedOrigins = frontendUrl 
-    ? frontendUrl.split(',').map(url => url.trim())
+  const frontendUrl = configService.get<string>('FRONTEND_URL');
+  const allowedOrigins: string[] = frontendUrl 
+    ? frontendUrl.split(',').map((url: string) => url.trim())
     : ['http://localhost:5173'];
   
   app.enableCors({
-    origin: (origin, callback) => {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (mobile apps, Postman, etc.)
       if (!origin) return callback(null, true);
       
       // Check if origin is in allowed list
-      if (allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed))) {
+      if (allowedOrigins.some((allowed: string) => origin === allowed || origin.startsWith(allowed))) {
         callback(null, true);
       } else {
         console.warn(`🚫 CORS blocked origin: ${origin}`);
