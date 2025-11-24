@@ -28,42 +28,39 @@ async function bootstrap() {
   app.use(helmet());
   app.use(compression());
 
-  // CORS - Allow multiple origins for production flexibility
+  // CORS - Simplified for production: allow all origins
+  const isProduction = configService.get('NODE_ENV') === 'production';
   const frontendUrl = configService.get<string>('FRONTEND_URL');
-  const allowedOrigins: string[] = frontendUrl 
-    ? frontendUrl.split(',').map((url: string) => url.trim())
-    : ['http://localhost:5173'];
   
-  app.enableCors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      // Allow requests with no origin (mobile apps, Postman, etc.)
-      if (!origin) return callback(null, true);
-      
-      // Check if origin is in allowed list (exact match or starts with)
-      const isAllowed = allowedOrigins.some((allowed: string) => {
-        return origin === allowed || origin.startsWith(allowed);
-      });
-      
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        // In production, allow all for now (tighten later)
-        // Only log warning if not in allowed list
-        if (configService.get('NODE_ENV') === 'production') {
-          console.warn(`🚫 CORS: Origin ${origin} not in allowed list, but allowing for production`);
-          callback(null, true);
-        } else {
-          console.warn(`🚫 CORS blocked origin: ${origin}`);
-          callback(null, true);
-        }
-      }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  });
-  
-  console.log(`🌐 CORS configured for origins: ${allowedOrigins.join(', ')}`);
+  if (isProduction) {
+    // In production, allow all origins (no restrictions)
+    app.enableCors({
+      origin: true, // Allow all origins
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    });
+    console.log('🌐 CORS: Allowing all origins in production');
+  } else {
+    // In development, use specific origins
+    const allowedOrigins: string[] = frontendUrl 
+      ? frontendUrl.split(',').map((url: string) => url.trim())
+      : ['http://localhost:5173'];
+    
+    app.enableCors({
+      origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+        if (!origin) return callback(null, true);
+        const isAllowed = allowedOrigins.some((allowed: string) => {
+          return origin === allowed || origin.startsWith(allowed);
+        });
+        callback(null, isAllowed);
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    });
+    console.log(`🌐 CORS configured for origins: ${allowedOrigins.join(', ')}`);
+  }
 
   // Global prefix
   const apiPrefix = configService.get('API_PREFIX') || 'api/v1';
