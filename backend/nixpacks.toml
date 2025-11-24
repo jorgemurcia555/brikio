@@ -1,0 +1,15 @@
+# Nixpacks configuration for Railway
+# This tells Railway how to build the NestJS backend
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm install --prefer-offline --no-audit --progress=false"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm run start:prod"
+
