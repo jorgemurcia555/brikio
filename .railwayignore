@@ -1,0 +1,33 @@
+# Node modules
+node_modules/
+*/node_modules/
+
+# Development files
+.env
+.env.local
+.env.development
+*.log
+
+# Build artifacts (will be built on Railway)
+backend/dist/
+frontend/dist/
+
+# Testing
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed for deployment)
+*.md
+!README.md
+
