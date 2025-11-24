@@ -43,11 +43,11 @@ export function Logo({
       <img 
         src={logoSrc} 
         alt="Brikio Logo" 
-        className={sizes[size]}
+        className={clsx(sizes[size], 'min-w-[24px] flex-shrink-0')}
       />
       {showText && (
         <span className={clsx(
-          'font-display font-bold tracking-wide',
+          'font-display font-bold tracking-wide whitespace-nowrap',
           textSizes[size],
           textColor || defaultTextColor
         )}>

@@ -110,36 +110,52 @@ export function GuestProjectPage() {
     <div className="min-h-screen bg-[#FFF7EA]">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#FFF7EA]/90 backdrop-blur border-b-2 border-[#F1D7C4]">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Logo size="md" variant="orange" showText={false} />
-            <div>
-              <p className="font-display text-xl text-[#8A3B12]">{t('brand.name')}</p>
-              <p className="text-xs text-[#C05A2B]">{t('guestProject.header.tryMode')}</p>
+        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
+              <Logo size="md" variant="orange" showText={false} />
+              <div className="hidden sm:block min-w-0">
+                <p className="font-display text-lg sm:text-xl text-[#8A3B12] truncate">{t('brand.name')}</p>
+                <p className="text-xs text-[#C05A2B]">{t('guestProject.header.tryMode')}</p>
+              </div>
+              <div className="sm:hidden">
+                <p className="font-display text-sm text-[#8A3B12] truncate">{t('brand.name')}</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            <Button variant="ghost" onClick={() => navigate('/')}>
-              <Home className="w-4 h-4 mr-2" />
-              {t('guestProject.header.backHome')}
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/login')}>
-              {t('guestProject.header.signIn')}
-            </Button>
+            <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
+              <div className="hidden sm:block">
+                <LanguageSwitcher />
+              </div>
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/')}
+                className="hidden sm:flex items-center"
+              >
+                <Home className="w-4 h-4 sm:mr-2" />
+                <span className="hidden md:inline">{t('guestProject.header.backHome')}</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/login')}
+                className="text-xs sm:text-base px-2 sm:px-4"
+              >
+                <span className="hidden sm:inline">{t('guestProject.header.signIn')}</span>
+                <span className="sm:hidden">Sign in</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 py-12 max-w-5xl">
+      <div className="container mx-auto px-3 sm:px-6 py-6 sm:py-12 max-w-5xl">
         {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex items-center justify-between mb-6 sm:mb-12 overflow-x-auto pb-2">
           {['project', 'areas', 'items', 'preview'].map((step, index) => (
-            <div key={step} className="flex items-center">
+            <div key={step} className="flex items-center flex-shrink-0">
               <button
                 onClick={() => setCurrentStep(step as typeof currentStep)}
-                className={`flex items-center justify-center w-10 h-10 rounded-full border-2 font-bold ${
+                className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 font-bold text-sm sm:text-base ${
                   currentStep === step
                     ? 'bg-[#F15A24] border-[#F15A24] text-white'
                     : 'border-[#F4C197] text-[#8A3B12]'
@@ -148,7 +164,7 @@ export function GuestProjectPage() {
                 {index + 1}
               </button>
               {index < 3 && (
-                <div className={`w-24 h-0.5 ${
+                <div className={`w-12 sm:w-24 h-0.5 flex-shrink-0 ${
                   ['areas', 'items', 'preview'].indexOf(currentStep) > index
                     ? 'bg-[#F15A24]'
                     : 'bg-[#F4C197]'
@@ -160,10 +176,10 @@ export function GuestProjectPage() {
 
         {/* Step 1: Project Info */}
         {currentStep === 'project' && (
-          <Card className="p-8 bg-white border-2 border-[#F4C197] rounded-3xl">
-            <div className="flex items-center gap-3 mb-6">
-              <FileText className="w-8 h-8 text-[#F15A24]" />
-              <h2 className="text-3xl font-display text-[#8A3B12]">{t('guestProject.projectInfo.title')}</h2>
+          <Card className="p-4 sm:p-8 bg-white border-2 border-[#F4C197] rounded-2xl sm:rounded-3xl">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-[#F15A24] flex-shrink-0" />
+              <h2 className="text-xl sm:text-3xl font-display text-[#8A3B12]">{t('guestProject.projectInfo.title')}</h2>
             </div>
             <div className="space-y-4">
               <div>
@@ -181,12 +197,13 @@ export function GuestProjectPage() {
                 <p className="text-sm text-[#6C4A32]" dangerouslySetInnerHTML={{ __html: t('guestProject.projectInfo.tip') }} />
               </div>
             </div>
-            <div className="flex justify-end mt-8">
+            <div className="flex justify-end mt-6 sm:mt-8">
               <Button
                 variant="primary"
                 onClick={() => setCurrentStep('areas')}
                 disabled={!projectName.trim()}
-                icon={<ArrowRight className="w-5 h-5" />}
+                icon={<ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />}
+                className="w-full sm:w-auto"
               >
                 {t('guestProject.projectInfo.continue')}
               </Button>
@@ -196,45 +213,61 @@ export function GuestProjectPage() {
 
         {/* Step 2: Areas */}
         {currentStep === 'areas' && (
-          <Card className="p-8 bg-white border-2 border-[#F4C197] rounded-3xl">
-            <div className="flex items-center gap-3 mb-6">
-              <Home className="w-8 h-8 text-[#F15A24]" />
-              <h2 className="text-3xl font-display text-[#8A3B12]">Define Areas</h2>
+          <Card className="p-4 sm:p-8 bg-white border-2 border-[#F4C197] rounded-2xl sm:rounded-3xl">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <Home className="w-6 h-6 sm:w-8 sm:h-8 text-[#F15A24] flex-shrink-0" />
+              <h2 className="text-xl sm:text-3xl font-display text-[#8A3B12]">Define Areas</h2>
             </div>
-            <div className="space-y-4 mb-6">
+            <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
               {areas.map((area) => (
-                <div key={area.id} className="flex gap-3 items-start">
+                <div key={area.id} className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-start">
                   <Input
                     value={area.name}
                     onChange={(e) => updateArea(area.id, 'name', e.target.value)}
                     placeholder="Area name (e.g., Living Room)"
                     className="flex-1"
                   />
-                  <Input
-                    type="number"
-                    value={area.sqMeters || ''}
-                    onChange={(e) => updateArea(area.id, 'sqMeters', parseFloat(e.target.value) || 0)}
-                    placeholder="m²"
-                    className="w-32"
-                  />
-                  <Button variant="ghost" onClick={() => removeArea(area.id)}>
-                    <X className="w-5 h-5 text-red-600" />
-                  </Button>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      type="number"
+                      value={area.sqMeters || ''}
+                      onChange={(e) => updateArea(area.id, 'sqMeters', parseFloat(e.target.value) || 0)}
+                      placeholder="m²"
+                      className="w-24 sm:w-32"
+                    />
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => removeArea(area.id)}
+                      className="p-2 flex-shrink-0"
+                    >
+                      <X className="w-5 h-5 text-red-600" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
-            <Button variant="outline" onClick={addArea} icon={<Plus className="w-5 h-5" />}>
+            <Button 
+              variant="outline" 
+              onClick={addArea} 
+              icon={<Plus className="w-4 h-4 sm:w-5 sm:h-5" />}
+              className="w-full sm:w-auto"
+            >
               Add Area
             </Button>
-            <div className="flex justify-between mt-8">
-              <Button variant="ghost" onClick={() => setCurrentStep('project')}>
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 mt-6 sm:mt-8">
+              <Button 
+                variant="ghost" 
+                onClick={() => setCurrentStep('project')}
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
                 Back
               </Button>
               <Button
                 variant="primary"
                 onClick={() => setCurrentStep('items')}
                 disabled={areas.length === 0}
-                icon={<ArrowRight className="w-5 h-5" />}
+                icon={<ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />}
+                className="w-full sm:w-auto order-1 sm:order-2"
               >
                 Continue to Line Items
               </Button>
@@ -244,18 +277,18 @@ export function GuestProjectPage() {
 
         {/* Step 3: Line Items */}
         {currentStep === 'items' && (
-          <Card className="p-8 bg-white border-2 border-[#F4C197] rounded-3xl">
-            <div className="flex items-center gap-3 mb-6">
-              <Calculator className="w-8 h-8 text-[#F15A24]" />
-              <h2 className="text-3xl font-display text-[#8A3B12]">{t('guestProject.items.title')}</h2>
+          <Card className="p-4 sm:p-8 bg-white border-2 border-[#F4C197] rounded-2xl sm:rounded-3xl">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <Calculator className="w-6 h-6 sm:w-8 sm:h-8 text-[#F15A24] flex-shrink-0" />
+              <h2 className="text-xl sm:text-3xl font-display text-[#8A3B12]">{t('guestProject.items.title')}</h2>
             </div>
 
-            <p className="text-secondary-600 mb-6">
+            <p className="text-secondary-600 mb-4 sm:mb-6 text-sm sm:text-base">
               {t('guestProject.items.description')}
             </p>
 
-            {/* Column Headers */}
-            <div className="grid grid-cols-12 gap-3 mb-3 px-3">
+            {/* Column Headers - Hidden on mobile, shown on desktop */}
+            <div className="hidden md:grid grid-cols-12 gap-3 mb-3 px-3">
               <div className="col-span-5 flex items-center gap-2">
                 <span className="text-sm font-semibold text-secondary-700">
                   {t('guestProject.items.headers.description')}
@@ -288,16 +321,17 @@ export function GuestProjectPage() {
             </div>
 
             {/* Line Items */}
-            <div className="space-y-3 mb-6">
+            <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
               {lineItems.map((item, index) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="bg-[#FFF7EA] rounded-xl border border-[#F4C197] p-3"
+                  className="bg-[#FFF7EA] rounded-xl border border-[#F4C197] p-3 sm:p-4"
                 >
-                  <div className="grid grid-cols-12 gap-3 items-center">
+                  {/* Desktop Layout */}
+                  <div className="hidden md:grid grid-cols-12 gap-3 items-center">
                     <div className="col-span-5">
                       <Input
                         value={item.description}
@@ -349,6 +383,81 @@ export function GuestProjectPage() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Mobile Layout - Stacked */}
+                  <div className="md:hidden space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex-1">
+                        <label className="block text-xs text-[#8A3B12] mb-1 font-medium">
+                          {t('guestProject.items.headers.description')}
+                        </label>
+                        <Input
+                          value={item.description}
+                          onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
+                          placeholder={t('guestProject.items.placeholders.description')}
+                          className="bg-white w-full"
+                        />
+                      </div>
+                      <button
+                        onClick={() => removeLineItem(item.id)}
+                        className="p-2 hover:bg-red-100 rounded-lg transition-colors self-start mt-6"
+                        title={t('common.delete')}
+                      >
+                        <X className="w-5 h-5 text-red-600" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-xs text-[#8A3B12] mb-1 font-medium">
+                          {t('guestProject.items.headers.quantity')}
+                        </label>
+                        <Input
+                          type="number"
+                          value={item.quantity || ''}
+                          onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                          placeholder={t('guestProject.items.placeholders.quantity')}
+                          className="bg-white w-full"
+                          min="0"
+                          step="0.01"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-[#8A3B12] mb-1 font-medium">
+                          {t('guestProject.items.headers.unit')}
+                        </label>
+                        <Input
+                          value={item.unit}
+                          onChange={(e) => updateLineItem(item.id, 'unit', e.target.value)}
+                          placeholder={t('guestProject.items.placeholders.unit')}
+                          className="bg-white w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-[#8A3B12] mb-1 font-medium">
+                          {t('guestProject.items.headers.price')}
+                        </label>
+                        <Input
+                          type="number"
+                          value={item.unitPrice || ''}
+                          onChange={(e) => updateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                          placeholder={t('guestProject.items.placeholders.price')}
+                          className="bg-white w-full"
+                          min="0"
+                          step="0.01"
+                        />
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-[#F4C197]">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-semibold text-[#8A3B12]">
+                          {t('guestProject.items.headers.total')}:
+                        </span>
+                        <span className="text-lg font-bold text-[#F15A24]">
+                          ${(item.quantity * item.unitPrice).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -376,15 +485,20 @@ export function GuestProjectPage() {
             </div>
 
             {/* Navigation */}
-            <div className="flex justify-between mt-8">
-              <Button variant="ghost" onClick={() => setCurrentStep('areas')}>
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 mt-6 sm:mt-8">
+              <Button 
+                variant="ghost" 
+                onClick={() => setCurrentStep('areas')}
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
                 {t('common.back')}
               </Button>
               <Button
                 variant="primary"
                 onClick={() => setCurrentStep('preview')}
                 disabled={lineItems.length === 0}
-                icon={<ArrowRight className="w-5 h-5" />}
+                icon={<ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />}
+                className="w-full sm:w-auto order-1 sm:order-2"
               >
                 {t('guestProject.items.previewEstimate')}
               </Button>
@@ -394,13 +508,18 @@ export function GuestProjectPage() {
 
         {/* Step 4: Preview */}
         {currentStep === 'preview' && (
-          <Card className="p-8 bg-white border-2 border-[#F4C197] rounded-3xl">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <FileText className="w-8 h-8 text-[#F15A24]" />
-                <h2 className="text-3xl font-display text-[#8A3B12]">Preview Estimate</h2>
+          <Card className="p-4 sm:p-8 bg-white border-2 border-[#F4C197] rounded-2xl sm:rounded-3xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-[#F15A24] flex-shrink-0" />
+                <h2 className="text-xl sm:text-3xl font-display text-[#8A3B12]">Preview Estimate</h2>
               </div>
-              <Button variant="primary" onClick={handleDownload} icon={<Download className="w-5 h-5" />}>
+              <Button 
+                variant="primary" 
+                onClick={handleDownload} 
+                icon={<Download className="w-4 h-4 sm:w-5 sm:h-5" />}
+                className="w-full sm:w-auto"
+              >
                 Download PDF
               </Button>
             </div>
@@ -422,8 +541,8 @@ export function GuestProjectPage() {
               </div>
             </div>
 
-            {/* Line Items Table */}
-            <div className="overflow-x-auto mb-8">
+            {/* Line Items Table - Desktop */}
+            <div className="hidden md:block overflow-x-auto mb-6 sm:mb-8">
               <table className="w-full">
                 <thead>
                   <tr className="border-b-2 border-[#F4C197]">
@@ -460,11 +579,57 @@ export function GuestProjectPage() {
               </table>
             </div>
 
-            <div className="flex justify-between">
-              <Button variant="ghost" onClick={() => setCurrentStep('items')}>
+            {/* Line Items Cards - Mobile */}
+            <div className="md:hidden space-y-3 mb-6">
+              {lineItems.map((item) => (
+                <div key={item.id} className="bg-[#FFF7EA] rounded-xl border border-[#F4C197] p-4">
+                  <div className="font-semibold text-[#8A3B12] mb-2">{item.description}</div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-[#C05A2B]">Qty:</span>
+                      <span className="ml-2 text-[#6C4A32]">{item.quantity}</span>
+                    </div>
+                    <div>
+                      <span className="text-[#C05A2B]">Unit:</span>
+                      <span className="ml-2 text-[#6C4A32]">{item.unit}</span>
+                    </div>
+                    <div>
+                      <span className="text-[#C05A2B]">Price:</span>
+                      <span className="ml-2 text-[#6C4A32]">${item.unitPrice.toFixed(2)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[#C05A2B]">Total:</span>
+                      <span className="ml-2 font-bold text-[#F15A24]">
+                        ${(item.quantity * item.unitPrice).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="bg-[#FDEFD9] rounded-xl border-2 border-[#F4C197] p-4 mt-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold text-[#8A3B12]">Total</span>
+                  <span className="text-2xl font-bold text-[#F15A24]">
+                    ${totalAmount.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0">
+              <Button 
+                variant="ghost" 
+                onClick={() => setCurrentStep('items')}
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
                 Back to Edit
               </Button>
-              <Button variant="primary" onClick={handleDownload} icon={<Download className="w-5 h-5" />}>
+              <Button 
+                variant="primary" 
+                onClick={handleDownload} 
+                icon={<Download className="w-4 h-4 sm:w-5 sm:h-5" />}
+                className="w-full sm:w-auto order-1 sm:order-2"
+              >
                 Download PDF
               </Button>
             </div>

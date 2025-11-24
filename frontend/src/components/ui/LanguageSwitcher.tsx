@@ -13,11 +13,11 @@ export function LanguageSwitcher() {
   return (
     <button
       onClick={toggleLanguage}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg text-[#8A3B12] hover:bg-[#F4C197]/40 transition-colors"
+      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg text-[#8A3B12] hover:bg-[#F4C197]/40 transition-colors"
       aria-label="Change language"
     >
-      <Globe className="w-5 h-5" />
-      <span className="font-medium uppercase text-sm">
+      <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
+      <span className="font-medium uppercase text-xs sm:text-sm">
         {i18n.language === 'en' ? 'ES' : 'EN'}
       </span>
     </button>
