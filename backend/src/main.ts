@@ -32,6 +32,11 @@ async function bootstrap() {
   const isProduction = configService.get('NODE_ENV') === 'production';
   const frontendUrl = configService.get<string>('FRONTEND_URL');
   
+  // Determine allowed origins for logging
+  const allowedOrigins: string[] = frontendUrl 
+    ? frontendUrl.split(',').map((url: string) => url.trim())
+    : isProduction ? ['* (all origins)'] : ['http://localhost:5173'];
+  
   if (isProduction) {
     // In production, allow all origins (no restrictions)
     app.enableCors({
@@ -43,10 +48,6 @@ async function bootstrap() {
     console.log('🌐 CORS: Allowing all origins in production');
   } else {
     // In development, use specific origins
-    const allowedOrigins: string[] = frontendUrl 
-      ? frontendUrl.split(',').map((url: string) => url.trim())
-      : ['http://localhost:5173'];
-    
     app.enableCors({
       origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
         if (!origin) return callback(null, true);
@@ -92,7 +93,7 @@ async function bootstrap() {
     📚 Environment: ${configService.get('NODE_ENV')}
     🗄️  Database: ${configService.get('DATABASE_URL') ? 'Connected via DATABASE_URL' : `${configService.get('DB_HOST')}:${configService.get('DB_PORT')}`}
     🌐 Frontend URL: ${frontendUrl || 'Not configured'}
-    🔒 CORS Origins: ${allowedOrigins.join(', ')}
+    🔒 CORS: ${isProduction ? 'Allowing all origins' : `Origins: ${allowedOrigins.join(', ')}`}
   `);
 }
 
