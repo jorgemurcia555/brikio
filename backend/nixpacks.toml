@@ -5,7 +5,9 @@
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["npm install --prefer-offline --no-audit --progress=false"]
+cmds = [
+  "PUPPETEER_SKIP_DOWNLOAD=true npm ci --prefer-offline --no-audit --progress=false --loglevel=error || PUPPETEER_SKIP_DOWNLOAD=true npm install --prefer-offline --no-audit --progress=false --loglevel=error"
+]
 
 [phases.build]
 cmds = ["npm run build"]
