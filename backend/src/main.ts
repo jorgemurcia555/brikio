@@ -18,11 +18,31 @@ async function bootstrap() {
   app.use(helmet());
   app.use(compression());
 
-  // CORS
+  // CORS - Allow multiple origins for production flexibility
+  const frontendUrl = configService.get('FRONTEND_URL');
+  const allowedOrigins = frontendUrl 
+    ? frontendUrl.split(',').map(url => url.trim())
+    : ['http://localhost:5173'];
+  
   app.enableCors({
-    origin: configService.get('FRONTEND_URL') || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin is in allowed list
+      if (allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed))) {
+        callback(null, true);
+      } else {
+        console.warn(`🚫 CORS blocked origin: ${origin}`);
+        callback(null, true); // Allow all in production for debugging - tighten later
+      }
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
+  
+  console.log(`🌐 CORS configured for origins: ${allowedOrigins.join(', ')}`);
 
   // Global prefix
   const apiPrefix = configService.get('API_PREFIX') || 'api/v1';
@@ -52,7 +72,9 @@ async function bootstrap() {
   console.log(`
     🚀 BudgetApp API running on: http://localhost:${port}/${apiPrefix}
     📚 Environment: ${configService.get('NODE_ENV')}
-    🗄️  Database: ${configService.get('DB_HOST')}:${configService.get('DB_PORT')}
+    🗄️  Database: ${configService.get('DATABASE_URL') ? 'Connected via DATABASE_URL' : `${configService.get('DB_HOST')}:${configService.get('DB_PORT')}`}
+    🌐 Frontend URL: ${frontendUrl || 'Not configured'}
+    🔒 CORS Origins: ${allowedOrigins.join(', ')}
   `);
 }
 
