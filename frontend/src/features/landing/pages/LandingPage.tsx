@@ -331,7 +331,6 @@ export function LandingPage() {
         </Card> */}
       </section>
 
-      {/* Social proof */}
       <section className="bg-[#F4C197]/40 py-8">
         <div className="container mx-auto px-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
           {socialProof.map((item) => (
