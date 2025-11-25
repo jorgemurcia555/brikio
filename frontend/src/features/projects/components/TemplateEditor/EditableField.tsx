@@ -109,11 +109,11 @@ export function EditableField({
       className={`group cursor-pointer hover:bg-[#FFF7EA]/50 rounded-lg p-2 -m-2 transition-colors relative ${displayClassName}`}
     >
       {value || placeholder ? (
-        <span className={value ? '' : 'text-[#C05A2B] italic'}>
+        <span className={value ? '' : 'text-[#C05A2B]'}>
           {value || placeholder}
         </span>
       ) : (
-        <span className="text-[#C05A2B] italic">Click to edit</span>
+        <span className="text-[#C05A2B]">Click to edit</span>
       )}
       <Pencil className="w-3 h-3 text-[#C05A2B] opacity-0 group-hover:opacity-100 absolute top-1 right-1 transition-opacity" />
     </div>

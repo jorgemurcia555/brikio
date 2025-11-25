@@ -196,10 +196,16 @@ export function TemplateToolbar({
               </motion.div>
               {/* Floating panel with options - stays visible when active */}
               {isActive && (
-                <div 
-                  className="toolbar-panel absolute left-full ml-2 top-0 bg-white border-2 border-[#F4C197] rounded-xl shadow-xl z-50 min-w-[200px] p-3"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <>
+                  {/* Mobile overlay */}
+                  <div 
+                    className="sm:hidden fixed inset-0 bg-black/20 z-[55]"
+                    onClick={() => setActiveSection(null)}
+                  />
+                  <div 
+                    className="toolbar-panel fixed sm:absolute left-16 sm:left-full top-1/2 sm:top-0 -translate-y-1/2 sm:translate-y-0 ml-0 sm:ml-2 bg-white border-2 border-[#F4C197] rounded-xl shadow-xl z-[60] min-w-[200px] max-w-[calc(100vw-5rem)] sm:max-w-none p-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-semibold text-[#8A3B12]">{section.label}</span>
                   {!section.required && (
@@ -255,9 +261,10 @@ export function TemplateToolbar({
                   </div>
                 )}
                 {section.required && (
-                  <div className="text-xs text-[#C05A2B] mt-2 italic">Required section</div>
+                  <div className="text-xs text-[#C05A2B] mt-2">Required section</div>
                 )}
                 </div>
+                </>
               )}
             </div>
           );

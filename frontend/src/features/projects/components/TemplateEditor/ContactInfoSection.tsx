@@ -10,6 +10,37 @@ interface ContactInfoSectionProps {
 }
 
 export function ContactInfoSection({ contactInfo, onChange, layout, readOnly = false }: ContactInfoSectionProps) {
+  if (readOnly) {
+    const hasAnyField = contactInfo.email || contactInfo.phone || contactInfo.website;
+    
+    if (!hasAnyField) {
+      return null;
+    }
+    
+    return (
+      <div className="text-sm text-[#6C4A32] space-y-2 text-right">
+        {contactInfo.email && (
+          <div>
+            <span className="font-semibold text-[#8A3B12]">Email: </span>
+            <span>{contactInfo.email}</span>
+          </div>
+        )}
+        {contactInfo.phone && (
+          <div>
+            <span className="font-semibold text-[#8A3B12]">Phone: </span>
+            <span>{contactInfo.phone}</span>
+          </div>
+        )}
+        {contactInfo.website && (
+          <div>
+            <span className="font-semibold text-[#8A3B12]">Website: </span>
+            <span>{contactInfo.website}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="mb-6 flex-1">
       <div className="flex items-start gap-4 text-right">

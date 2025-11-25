@@ -10,6 +10,37 @@ interface PaymentMethodSectionProps {
 }
 
 export function PaymentMethodSection({ paymentMethod, onChange, layout, readOnly = false }: PaymentMethodSectionProps) {
+  if (readOnly) {
+    const hasAnyField = paymentMethod.bankName || paymentMethod.accountNumber || paymentMethod.paymentMode;
+    
+    if (!hasAnyField) {
+      return null;
+    }
+    
+    return (
+      <div className="text-sm text-[#6C4A32] space-y-2">
+        {paymentMethod.bankName && (
+          <div>
+            <span className="font-semibold text-[#8A3B12]">Bank: </span>
+            <span>{paymentMethod.bankName}</span>
+          </div>
+        )}
+        {paymentMethod.accountNumber && (
+          <div>
+            <span className="font-semibold text-[#8A3B12]">Account: </span>
+            <span>{paymentMethod.accountNumber}</span>
+          </div>
+        )}
+        {paymentMethod.paymentMode && (
+          <div>
+            <span className="font-semibold text-[#8A3B12]">Payment Mode: </span>
+            <span>{paymentMethod.paymentMode}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="mb-6 flex-1">
       <div className="flex items-start gap-4">

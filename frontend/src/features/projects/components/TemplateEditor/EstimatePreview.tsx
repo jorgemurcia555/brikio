@@ -39,86 +39,92 @@ export function EstimatePreview({
   };
 
   return (
-    <div className="bg-white border-2 border-[#F4C197] rounded-2xl shadow-lg w-full max-w-4xl mx-auto" style={{ minHeight: '800px', padding: '40px' }}>
+    <div className="bg-white w-full max-w-4xl mx-auto shadow-sm" style={{ minHeight: '800px', padding: '60px 80px', fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', lineHeight: '1.6' }}>
       {sortedSections.map((section) => {
         switch (section.id) {
           case 'header':
+            // Only show header if it has at least companyName or logo
+            if (!header.companyName && !header.logoUrl) {
+              return null;
+            }
             return (
-              <EstimateHeaderComponent
-                key={section.id}
-                header={header}
-                onChange={() => {}}
-                onLogoUpload={() => {}}
-                readOnly={true}
-              />
+              <div key={section.id} className="mb-10 pb-8" style={{ borderBottom: '2px solid #8A3B12' }}>
+                <EstimateHeaderComponent
+                  header={header}
+                  onChange={() => {}}
+                  onLogoUpload={() => {}}
+                  readOnly={true}
+                />
+              </div>
             );
           case 'jobSummary':
+            // Only show jobSummary if it has content
+            if (!jobSummary.jobTitle && !jobSummary.jobDescription && !projectName) {
+              return null;
+            }
             return (
-              <div key={section.id} className="mb-4">
+              <div key={section.id} className="mb-8 pb-6" style={{ borderBottom: '1px solid #F4C197' }}>
                 <JobSummarySection
                   jobSummary={jobSummary}
                   onChange={() => {}}
                   projectName={projectName}
+                  readOnly
                 />
               </div>
             );
           case 'projectInfo':
+            // Only show projectInfo if it has at least one field
+            if (!projectInfo.projectAddress && !projectInfo.city && !projectInfo.state && 
+                !projectInfo.country && !projectInfo.estimateDate && !projectInfo.workDuration) {
+              return null;
+            }
             return (
-              <ProjectInfoSection
-                key={section.id}
-                projectInfo={projectInfo}
-                onChange={() => {}}
-                layout={section.layout || 'two-columns'}
-                readOnly
-              />
+              <div key={section.id} className="mb-8 pb-6" style={{ borderBottom: '1px solid #F4C197' }}>
+                <ProjectInfoSection
+                  projectInfo={projectInfo}
+                  onChange={() => {}}
+                  layout={section.layout || 'two-columns'}
+                  readOnly
+                />
+              </div>
             );
           case 'itemsTable':
             return (
-              <div key={section.id} className="mb-8">
+              <div key={section.id} className="mb-10">
                 {/* Desktop Table */}
-                <div className="hidden md:block mb-4">
-                  <div className="grid grid-cols-10 gap-1.5 mb-2 pb-1.5 border-b-2 border-[#8A3B12]">
-                    <div className="col-span-5 text-left py-1 px-1.5 text-[#8A3B12] font-semibold">
-                      <span className="text-xs">Description</span>
-                    </div>
-                    <div className="col-span-2 text-right py-1 px-1.5 text-[#8A3B12] font-semibold">
-                      <span className="text-xs">Quantity</span>
-                    </div>
-                    <div className="col-span-2 text-right py-1 px-1.5 text-[#8A3B12] font-semibold">
-                      <span className="text-xs">Unit Price</span>
-                    </div>
-                    <div className="col-span-1 text-right py-1 px-1.5 text-[#8A3B12] font-semibold">
-                      <span className="text-xs">Total</span>
-                    </div>
-                  </div>
+                <div className="hidden md:block mb-6">
+                  <table className="w-full border-collapse" style={{ borderSpacing: 0 }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid #8A3B12' }}>
+                        <th className="text-left py-4 px-4 text-sm font-semibold text-[#8A3B12]" style={{ borderBottom: '2px solid #8A3B12' }}>Description</th>
+                        <th className="text-right py-4 px-4 text-sm font-semibold text-[#8A3B12]" style={{ borderBottom: '2px solid #8A3B12' }}>Quantity</th>
+                        <th className="text-right py-4 px-4 text-sm font-semibold text-[#8A3B12]" style={{ borderBottom: '2px solid #8A3B12' }}>Unit Price</th>
+                        <th className="text-right py-4 px-4 text-sm font-semibold text-[#8A3B12]" style={{ borderBottom: '2px solid #8A3B12' }}>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lineItems.map((item, index) => (
+                        <tr 
+                          key={item.id}
+                          style={{ 
+                            borderBottom: index < lineItems.length - 1 ? '1px solid #F4C197' : 'none',
+                            backgroundColor: index % 2 === 0 ? 'white' : '#FFF7EA'
+                          }}
+                        >
+                          <td className="py-3 px-4 text-sm text-[#6C4A32]" style={{ wordBreak: 'break-word' }}>{item.description || '—'}</td>
+                          <td className="py-3 px-4 text-sm text-right text-[#6C4A32]">{item.quantity || 0}</td>
+                          <td className="py-3 px-4 text-sm text-right text-[#6C4A32]">${(item.unitPrice || 0).toFixed(2)}</td>
+                          <td className="py-3 px-4 text-sm text-right font-semibold text-[#8A3B12]">${(item.quantity * item.unitPrice).toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
 
-                  <div className="space-y-2">
-                    {lineItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="bg-[#FFF7EA] border-2 border-[#F4C197] rounded-lg p-2.5 grid grid-cols-10 gap-1.5 items-center"
-                      >
-                        <div className="col-span-5 text-xs text-[#6C4A32] min-w-0 truncate">
-                          {item.description || '—'}
-                        </div>
-                        <div className="col-span-2 text-right text-xs text-[#6C4A32]">
-                          {item.quantity || 0}
-                        </div>
-                        <div className="col-span-2 text-right text-xs text-[#6C4A32]">
-                          ${(item.unitPrice || 0).toFixed(2)}
-                        </div>
-                        <div className="col-span-1 text-right text-xs font-semibold text-[#8A3B12] min-w-0 truncate">
-                          ${(item.quantity * item.unitPrice).toFixed(2)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t-2 border-[#F15A24]">
+                  <div className="mt-8 pt-6" style={{ borderTop: '2px solid #8A3B12' }}>
                     <div className="flex justify-end">
                       <div className="text-right">
-                        <div className="text-xl font-display text-[#8A3B12] mb-1">Total</div>
-                        <div className="text-2xl font-display text-[#F15A24]">
+                        <div className="text-lg font-semibold text-[#8A3B12] mb-2">Total Estimate</div>
+                        <div className="text-2xl font-bold text-[#F15A24]">
                           ${calculateTotal().toFixed(2)}
                         </div>
                       </div>
@@ -127,32 +133,32 @@ export function EstimatePreview({
                 </div>
 
                 {/* Mobile Cards */}
-                <div className="md:hidden space-y-2">
+                <div className="md:hidden space-y-3">
                   {lineItems.map((item) => (
-                    <div key={item.id} className="bg-[#FFF7EA] rounded-lg border border-[#F4C197] p-2.5">
-                      <div className="text-xs font-semibold text-[#8A3B12] mb-1.5 break-words">{item.description || '—'}</div>
-                      <div className="grid grid-cols-2 gap-2 mb-1.5">
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-[#C05A2B] font-semibold whitespace-nowrap">Qty:</span>
-                          <span className="text-xs text-[#6C4A32]">{item.quantity || 0}</span>
+                    <div key={item.id} className="border-b border-[#F4C197] pb-3">
+                      <div className="text-sm font-semibold text-[#8A3B12] mb-2 break-words">{item.description || '—'}</div>
+                      <div className="grid grid-cols-2 gap-3 mb-2 text-sm">
+                        <div>
+                          <span className="text-[#C05A2B] font-semibold">Quantity: </span>
+                          <span className="text-[#6C4A32]">{item.quantity || 0}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-[#C05A2B] font-semibold whitespace-nowrap">Price:</span>
-                          <span className="text-xs text-[#6C4A32]">${(item.unitPrice || 0).toFixed(2)}</span>
+                        <div>
+                          <span className="text-[#C05A2B] font-semibold">Unit Price: </span>
+                          <span className="text-[#6C4A32]">${(item.unitPrice || 0).toFixed(2)}</span>
                         </div>
                       </div>
-                      <div className="pt-1.5 border-t border-[#F4C197] flex justify-between items-center">
-                        <span className="text-[10px] text-[#C05A2B] font-semibold">Total:</span>
-                        <span className="text-sm font-bold text-[#F15A24]">
+                      <div className="pt-2 border-t border-[#F4C197] flex justify-between items-center">
+                        <span className="text-sm font-semibold text-[#8A3B12]">Total:</span>
+                        <span className="text-base font-bold text-[#F15A24]">
                           ${(item.quantity * item.unitPrice).toFixed(2)}
                         </span>
                       </div>
                     </div>
                   ))}
-                  <div className="bg-[#FDEFD9] rounded-xl border-2 border-[#F4C197] p-4 mt-4">
+                  <div className="mt-4 pt-4 border-t-2 border-[#8A3B12]">
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold text-[#8A3B12]">Total</span>
-                      <span className="text-2xl font-bold text-[#F15A24]">
+                      <span className="text-base font-semibold text-[#8A3B12]">Total Estimate</span>
+                      <span className="text-xl font-bold text-[#F15A24]">
                         ${calculateTotal().toFixed(2)}
                       </span>
                     </div>
@@ -161,11 +167,19 @@ export function EstimatePreview({
               </div>
             );
           case 'paymentMethod':
+            // Only show paymentMethod if it has at least one field
+            const hasPaymentInfo = paymentMethod.bankName || paymentMethod.accountNumber || paymentMethod.paymentMode;
             const contactInfoSection = sections.find(s => s.id === 'contactInfo' && s.enabled);
-            if (contactInfoSection) {
+            const hasContactInfo = contactInfo && (contactInfo.email || contactInfo.phone || contactInfo.website);
+            
+            if (contactInfoSection && hasContactInfo) {
+              if (!hasPaymentInfo) {
+                // Only show contactInfo if paymentMethod is empty
+                return null;
+              }
               return (
-                <div key={`${section.id}-${contactInfoSection.id}`} className="mb-6 pt-4 border-t border-[#F4C197]">
-                  <div className="flex gap-6 items-start">
+                <div key={`${section.id}-${contactInfoSection.id}`} className="mb-8 pt-8" style={{ borderTop: '2px solid #F4C197' }}>
+                  <div className="grid grid-cols-2 gap-12">
                     <PaymentMethodSection
                       paymentMethod={paymentMethod}
                       onChange={() => {}}
@@ -182,8 +196,11 @@ export function EstimatePreview({
                 </div>
               );
             }
+            if (!hasPaymentInfo) {
+              return null;
+            }
             return (
-              <div key={section.id} className="mb-6 pt-4 border-t border-[#F4C197]">
+              <div key={section.id} className="mb-8 pt-8" style={{ borderTop: '2px solid #F4C197' }}>
                 <PaymentMethodSection
                   paymentMethod={paymentMethod}
                   onChange={() => {}}
@@ -193,10 +210,15 @@ export function EstimatePreview({
               </div>
             );
           case 'contactInfo':
+            // Only show contactInfo if it has at least one field
+            const hasContactInfoOnly = contactInfo && (contactInfo.email || contactInfo.phone || contactInfo.website);
+            if (!hasContactInfoOnly) {
+              return null;
+            }
             const paymentMethodSection = sections.find(s => s.id === 'paymentMethod' && s.enabled);
             if (!paymentMethodSection) {
               return (
-                <div key={section.id} className="mb-6 pt-4 border-t border-[#F4C197]">
+                <div key={section.id} className="mb-8 pt-8" style={{ borderTop: '2px solid #F4C197' }}>
                   <ContactInfoSection
                     contactInfo={contactInfo}
                     onChange={() => {}}

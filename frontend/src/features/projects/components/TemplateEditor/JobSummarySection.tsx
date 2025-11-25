@@ -8,10 +8,32 @@ interface JobSummarySectionProps {
   jobSummary: JobSummary;
   onChange: (field: keyof JobSummary, value: string) => void;
   projectName?: string;
+  readOnly?: boolean;
 }
 
-export function JobSummarySection({ jobSummary, onChange, projectName }: JobSummarySectionProps) {
+export function JobSummarySection({ jobSummary, onChange, projectName, readOnly }: JobSummarySectionProps) {
   const [isEditingJobTitle, setIsEditingJobTitle] = useState(false);
+
+  if (readOnly) {
+    const hasContent = (projectName || jobSummary.jobTitle) || jobSummary.jobDescription;
+    
+    if (!hasContent) {
+      return null;
+    }
+    
+    return (
+      <div>
+        {(projectName || jobSummary.jobTitle) && (
+          <h2 className="text-xl font-bold text-[#8A3B12] mb-3">
+            {projectName || jobSummary.jobTitle}
+          </h2>
+        )}
+        {jobSummary.jobDescription && (
+          <p className="text-sm text-[#6C4A32] leading-relaxed">{jobSummary.jobDescription}</p>
+        )}
+      </div>
+    );
+  }
 
   // Show projectName only if it exists AND jobTitle is empty AND not currently editing
   const shouldShowProjectName = projectName && !jobSummary.jobTitle && !isEditingJobTitle;

@@ -230,7 +230,7 @@
       "nameLabel": "Project Name",
       "namePlaceholder": "e.g., House Renovation 2024",
       "tip": "💡 **Tip:** You can explore all features without signing up. We'll only ask for registration when you're ready to download your estimate.",
-      "continue": "Continue to Areas",
+      "continue": "Continue",
       "back": "Back"
     },
     "areas": {

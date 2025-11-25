@@ -10,6 +10,58 @@ interface ProjectInfoSectionProps {
 }
 
 export function ProjectInfoSection({ projectInfo, onChange, layout, readOnly = false }: ProjectInfoSectionProps) {
+  if (readOnly) {
+    const hasAnyField = projectInfo.projectAddress || projectInfo.city || projectInfo.state || 
+                        projectInfo.country || projectInfo.estimateDate || projectInfo.workDuration;
+    
+    if (!hasAnyField) {
+      return null;
+    }
+    
+    return (
+      <div className="text-sm text-[#6C4A32]">
+        <div className={layout === 'two-columns' ? 'grid grid-cols-2 gap-x-6 gap-y-2' : 'space-y-2'}>
+          {projectInfo.projectAddress && (
+            <div>
+              <span className="font-semibold text-[#8A3B12]">Address: </span>
+              <span>{projectInfo.projectAddress}</span>
+            </div>
+          )}
+          {projectInfo.city && (
+            <div>
+              <span className="font-semibold text-[#8A3B12]">City: </span>
+              <span>{projectInfo.city}</span>
+            </div>
+          )}
+          {projectInfo.state && (
+            <div>
+              <span className="font-semibold text-[#8A3B12]">State: </span>
+              <span>{projectInfo.state}</span>
+            </div>
+          )}
+          {projectInfo.country && (
+            <div>
+              <span className="font-semibold text-[#8A3B12]">Country: </span>
+              <span>{projectInfo.country}</span>
+            </div>
+          )}
+          {projectInfo.estimateDate && (
+            <div>
+              <span className="font-semibold text-[#8A3B12]">Date: </span>
+              <span>{new Date(projectInfo.estimateDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+          )}
+          {projectInfo.workDuration && (
+            <div>
+              <span className="font-semibold text-[#8A3B12]">Duration: </span>
+              <span>{projectInfo.workDuration}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mb-6 pb-4 border-b border-[#F4C197]">
       <div className="flex items-start gap-4">

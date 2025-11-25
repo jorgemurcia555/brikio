@@ -19,80 +19,129 @@ export function EstimateHeader({ header, onChange, onLogoUpload, readOnly = fals
   };
 
   return (
-    <div className="mb-8">
-      <div className="flex items-center gap-2 mb-4 absolute ml-[-30px] mt-[2px]" >
-        <InteractiveTooltip
-          title="Header Information"
-          content={
-            <div className="space-y-2">
-              <p><strong>Company Name:</strong> Your business name will appear prominently at the top.</p>
-              <p><strong>Tagline:</strong> Optional brief description of what your company does.</p>
-              <p><strong>Logo:</strong> Upload your company logo. It will appear on every page of the PDF.</p>
-              <p><strong>Estimate Details:</strong> Number, date, and work duration help organize your estimates.</p>
-            </div>
-          }
-          size="lg"
-        />
-      </div>
+    <div className={readOnly ? "" : "mb-8"}>
+      {!readOnly && (
+        <div className="flex items-center gap-2 mb-4 absolute ml-[-30px] mt-[2px]" >
+          <InteractiveTooltip
+            title="Header Information"
+            content={
+              <div className="space-y-2">
+                <p><strong>Company Name:</strong> Your business name will appear prominently at the top.</p>
+                <p><strong>Tagline:</strong> Optional brief description of what your company does.</p>
+                <p><strong>Logo:</strong> Upload your company logo. It will appear on every page of the PDF.</p>
+                <p><strong>Estimate Details:</strong> Number, date, and work duration help organize your estimates.</p>
+              </div>
+            }
+            size="lg"
+          />
+        </div>
+      )}
       
       {/* Logo and Company Name Row */}
-      <div className="flex items-start justify-between gap-6 mb-6 pb-6 border-b-2 border-[#F4C197]">
+      <div className={`flex items-start justify-between gap-8 ${readOnly ? 'mb-0' : 'mb-6 pb-6 border-b-2 border-[#F4C197]'}`}>
         <div className="flex-1">
-          <EditableField
-            value={header.companyName}
-            onChange={(value) => onChange('companyName', value)}
-            placeholder="Company Name"
-            displayClassName="text-3xl font-display font-bold text-[#8A3B12] mb-2"
-            className="text-2xl font-display font-bold"
-          />
-          <EditableField
-            value={header.companyTagline}
-            onChange={(value) => onChange('companyTagline', value)}
-            placeholder="What does your company do? (optional)"
-            displayClassName="text-sm text-[#6C4A32]"
-            className="text-sm"
-          />
-          <div className="flex items-center gap-2 mt-1">
-            <Hash className="w-4 h-4 text-[#C05A2B]" />
-            <EditableField
-              value={header.estimateNumber}
-              onChange={(value) => onChange('estimateNumber', value)}
-              placeholder="0001"
-              displayClassName="flex-1"
-            />
-          </div>
+          {readOnly ? (
+            <>
+              {header.companyName && (
+                <div className="text-2xl font-bold text-[#8A3B12] mb-3">{header.companyName}</div>
+              )}
+              {header.companyTagline && (
+                <div className="text-sm text-[#6C4A32] mb-4 leading-relaxed">{header.companyTagline}</div>
+              )}
+              {(header.estimateNumber || header.date || header.workDuration) && (
+                <div className="flex items-center gap-3 text-sm text-[#6C4A32] flex-wrap">
+                  {header.estimateNumber && (
+                    <div>
+                      <span className="font-semibold text-[#8A3B12]">Estimate #: </span>
+                      <span>{header.estimateNumber}</span>
+                    </div>
+                  )}
+                  {header.date && (
+                    <div>
+                      <span className="font-semibold text-[#8A3B12]">Date: </span>
+                      <span>{new Date(header.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    </div>
+                  )}
+                  {header.workDuration && (
+                    <div>
+                      <span className="font-semibold text-[#8A3B12]">Duration: </span>
+                      <span>{header.workDuration}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <EditableField
+                value={header.companyName}
+                onChange={(value) => onChange('companyName', value)}
+                placeholder="Company Name"
+                displayClassName="text-3xl font-display font-bold text-[#8A3B12] mb-2"
+                className="text-2xl font-display font-bold"
+              />
+              <EditableField
+                value={header.companyTagline}
+                onChange={(value) => onChange('companyTagline', value)}
+                placeholder="What does your company do? (optional)"
+                displayClassName="text-sm text-[#6C4A32]"
+                className="text-sm"
+              />
+              <div className="flex items-center gap-2 mt-1">
+                <Hash className="w-4 h-4 text-[#C05A2B]" />
+                <EditableField
+                  value={header.estimateNumber}
+                  onChange={(value) => onChange('estimateNumber', value)}
+                  placeholder="0001"
+                  displayClassName="flex-1"
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Logo Upload Area */}
         <div className="flex-shrink-0">
-          {header.logoUrl ? (
-            <div className="relative group">
+          {readOnly ? (
+            header.logoUrl ? (
               <img
                 src={header.logoUrl}
                 alt="Company logo"
-                className="w-24 h-24 object-contain"
+                className="w-20 h-20 object-contain"
               />
-              <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 rounded-lg flex items-center justify-center cursor-pointer transition-opacity">
-                <Upload className="w-6 h-6 text-white" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </label>
-            </div>
+            ) : null
           ) : (
-            <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-[#F4C197] rounded-lg bg-[#FFF7EA] cursor-pointer hover:border-[#F15A24] transition-colors">
-              <Upload className="w-6 h-6 text-[#C05A2B] mb-1" />
-              <span className="text-xs text-[#6C4A32] text-center px-2">Upload Logo</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </label>
+            <>
+              {header.logoUrl ? (
+                <div className="relative group">
+                  <img
+                    src={header.logoUrl}
+                    alt="Company logo"
+                    className="w-24 h-24 object-contain"
+                  />
+                  <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 rounded-lg flex items-center justify-center cursor-pointer transition-opacity">
+                    <Upload className="w-6 h-6 text-white" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-[#F4C197] rounded-lg bg-[#FFF7EA] cursor-pointer hover:border-[#F15A24] transition-colors">
+                  <Upload className="w-6 h-6 text-[#C05A2B] mb-1" />
+                  <span className="text-xs text-[#6C4A32] text-center px-2">Upload Logo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </>
           )}
         </div>
       </div>
