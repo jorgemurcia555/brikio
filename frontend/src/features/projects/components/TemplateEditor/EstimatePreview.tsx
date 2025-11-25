@@ -207,7 +207,7 @@ export function EstimatePreview({
               );
             }
             return null;
-          case 'signature':
+          /* case 'signature':
             return (
               <SignatureSection
                 key={section.id}
@@ -216,7 +216,7 @@ export function EstimatePreview({
                 onSignatureUpload={() => {}}
                 readOnly
               />
-            );
+            ); */
           default:
             return null;
         }
