@@ -31,6 +31,7 @@ export interface JobSummary {
 }
 
 export interface ProjectInfo {
+  clientName?: string;
   projectAddress: string;
   city: string;
   state: string;

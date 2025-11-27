@@ -1,6 +1,7 @@
 import { Mail, Phone, Globe, Linkedin, Facebook, Twitter } from 'lucide-react';
 import { EditableField } from './EditableField';
 import { ContactInfo } from '../../types/template.types';
+import { useTranslation } from 'react-i18next';
 
 interface ContactInfoSectionProps {
   contactInfo: ContactInfo;
@@ -10,6 +11,8 @@ interface ContactInfoSectionProps {
 }
 
 export function ContactInfoSection({ contactInfo, onChange, layout, readOnly = false }: ContactInfoSectionProps) {
+  const { t } = useTranslation();
+  
   if (readOnly) {
     const hasAnyField = contactInfo.email || contactInfo.phone || contactInfo.website;
     
@@ -21,19 +24,19 @@ export function ContactInfoSection({ contactInfo, onChange, layout, readOnly = f
       <div className="text-sm text-[#6C4A32] space-y-2 text-right">
         {contactInfo.email && (
           <div>
-            <span className="font-semibold text-[#8A3B12]">Email: </span>
+            <span className="font-semibold text-[#8A3B12]">{t('templateEditor.contactInfo.email')}: </span>
             <span>{contactInfo.email}</span>
           </div>
         )}
         {contactInfo.phone && (
           <div>
-            <span className="font-semibold text-[#8A3B12]">Phone: </span>
+            <span className="font-semibold text-[#8A3B12]">{t('templateEditor.contactInfo.phone')}: </span>
             <span>{contactInfo.phone}</span>
           </div>
         )}
         {contactInfo.website && (
           <div>
-            <span className="font-semibold text-[#8A3B12]">Website: </span>
+            <span className="font-semibold text-[#8A3B12]">{t('templateEditor.contactInfo.website')}: </span>
             <span>{contactInfo.website}</span>
           </div>
         )}
@@ -50,7 +53,7 @@ export function ContactInfoSection({ contactInfo, onChange, layout, readOnly = f
               type="text"
               value={contactInfo.email}
               onChange={(value) => onChange('email', value)}
-              placeholder="email@example.com"
+              placeholder={t('templateEditor.contactInfo.emailPlaceholder')}
               displayClassName="text-sm text-[#6C4A32] flex-1"
             />
           </div>
@@ -58,7 +61,7 @@ export function ContactInfoSection({ contactInfo, onChange, layout, readOnly = f
             <EditableField
               value={contactInfo.phone}
               onChange={(value) => onChange('phone', value)}
-              placeholder="+1 (555) 123-4567"
+              placeholder={t('templateEditor.contactInfo.phonePlaceholder')}
               displayClassName="text-sm text-[#6C4A32] flex-1"
             />
           </div>
@@ -66,7 +69,7 @@ export function ContactInfoSection({ contactInfo, onChange, layout, readOnly = f
             <EditableField
               value={contactInfo.website}
               onChange={(value) => onChange('website', value)}
-              placeholder="https://example.com"
+              placeholder={t('templateEditor.contactInfo.websitePlaceholder')}
               displayClassName="text-sm text-[#6C4A32] flex-1"
             />
           </div>

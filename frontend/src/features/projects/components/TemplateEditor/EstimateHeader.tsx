@@ -2,6 +2,7 @@ import { Upload, Building2, Calendar, Hash } from 'lucide-react';
 import { InteractiveTooltip } from '../../../../components/ui/InteractiveTooltip';
 import { EditableField } from './EditableField';
 import { EstimateHeader as EstimateHeaderType } from '../../types/template.types';
+import { useTranslation } from 'react-i18next';
 
 interface EstimateHeaderProps {
   header: EstimateHeaderType;
@@ -11,6 +12,8 @@ interface EstimateHeaderProps {
 }
 
 export function EstimateHeader({ header, onChange, onLogoUpload, readOnly = false }: EstimateHeaderProps) {
+  const { t, i18n } = useTranslation();
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -23,13 +26,13 @@ export function EstimateHeader({ header, onChange, onLogoUpload, readOnly = fals
       {!readOnly && (
         <div className="flex items-center gap-2 mb-4 absolute ml-[-30px] mt-[2px]" >
           <InteractiveTooltip
-            title="Header Information"
+            title={t('templateEditor.header.title')}
             content={
               <div className="space-y-2">
-                <p><strong>Company Name:</strong> Your business name will appear prominently at the top.</p>
-                <p><strong>Tagline:</strong> Optional brief description of what your company does.</p>
-                <p><strong>Logo:</strong> Upload your company logo. It will appear on every page of the PDF.</p>
-                <p><strong>Estimate Details:</strong> Number, date, and work duration help organize your estimates.</p>
+                <p><strong>{t('templateEditor.header.companyName')}:</strong> {t('templateEditor.header.companyNameDesc')}</p>
+                <p><strong>{t('templateEditor.header.tagline')}:</strong> {t('templateEditor.header.taglineDesc')}</p>
+                <p><strong>{t('templateEditor.header.logo')}:</strong> {t('templateEditor.header.logoDesc')}</p>
+                <p><strong>{t('templateEditor.header.estimateDetails')}:</strong> {t('templateEditor.header.estimateDetailsDesc')}</p>
               </div>
             }
             size="lg"
@@ -52,19 +55,19 @@ export function EstimateHeader({ header, onChange, onLogoUpload, readOnly = fals
                 <div className="flex items-center gap-3 text-sm text-[#6C4A32] flex-wrap">
                   {header.estimateNumber && (
                     <div>
-                      <span className="font-semibold text-[#8A3B12]">Estimate #: </span>
+                      <span className="font-semibold text-[#8A3B12]">{t('templateEditor.header.estimateNumber')}: </span>
                       <span>{header.estimateNumber}</span>
                     </div>
                   )}
                   {header.date && (
                     <div>
-                      <span className="font-semibold text-[#8A3B12]">Date: </span>
-                      <span>{new Date(header.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                      <span className="font-semibold text-[#8A3B12]">{t('templateEditor.header.date')}: </span>
+                      <span>{new Date(header.date).toLocaleDateString(i18n.language === 'es' ? 'es-ES' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                     </div>
                   )}
                   {header.workDuration && (
                     <div>
-                      <span className="font-semibold text-[#8A3B12]">Duration: </span>
+                      <span className="font-semibold text-[#8A3B12]">{t('templateEditor.header.duration')}: </span>
                       <span>{header.workDuration}</span>
                     </div>
                   )}
@@ -132,7 +135,7 @@ export function EstimateHeader({ header, onChange, onLogoUpload, readOnly = fals
               ) : (
                 <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-[#F4C197] rounded-lg bg-[#FFF7EA] cursor-pointer hover:border-[#F15A24] transition-colors">
                   <Upload className="w-6 h-6 text-[#C05A2B] mb-1" />
-                  <span className="text-xs text-[#6C4A32] text-center px-2">Upload Logo</span>
+                  <span className="text-xs text-[#6C4A32] text-center px-2">{t('templateEditor.header.uploadLogo')}</span>
                   <input
                     type="file"
                     accept="image/*"

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Calculator } from 'lucide-react';
 import { TemplateSectionConfig, TemplateSectionId, EstimateHeader, JobSummary, ProjectInfo, PaymentMethod, ContactInfo, Signature } from '../../types/template.types';
@@ -17,8 +17,16 @@ import { SignatureSection } from './SignatureSection';
 import { Button } from '../../../../components/ui/Button';
 import { EditableField } from './EditableField';
 import { InteractiveTooltip } from '../../../../components/ui/InteractiveTooltip';
-import { Plus, X, Eye, EyeOff, Settings, Sparkles, MessageCircle } from 'lucide-react';
+import { Plus, X, Eye, EyeOff, Settings, Sparkles, MessageCircle, HelpCircle } from 'lucide-react';
 import { UNIT_OPTIONS } from '../../constants/units.constants';
+import { useAuthStore } from '../../../../stores/authStore';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import api from '../../../../services/api';
+import { toast } from 'sonner';
+import { Modal } from '../../../../components/ui/Modal';
+import { Input } from '../../../../components/ui/Input';
+import { useTranslation } from 'react-i18next';
+import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 
 export interface LineItem {
   id: string;
@@ -36,6 +44,7 @@ export interface TemplateData {
   paymentMethod: PaymentMethod;
   contactInfo: ContactInfo;
   signature: Signature;
+  theme?: string;
 }
 
 interface TemplateEditorProps {
@@ -46,25 +55,124 @@ interface TemplateEditorProps {
   onTemplateChange?: (template: TemplateData) => void;
 }
 
-const initialSections: TemplateSectionConfig[] = [
-  { id: 'header', label: 'Header', enabled: true, order: 0 },
-  { id: 'jobSummary', label: 'Job Summary', enabled: true, order: 1 },
-  { id: 'projectInfo', label: 'Project Info', enabled: true, order: 2, layout: 'two-columns' },
-  { id: 'itemsTable', label: 'Items Table', enabled: true, order: 3, required: true },
-  { id: 'paymentMethod', label: 'Payment Method', enabled: true, order: 4, layout: 'two-columns' },
-  { id: 'contactInfo', label: 'Contact Info', enabled: true, order: 5, layout: 'two-columns' },
-  /* { id: 'signature', label: 'Signature', enabled: false, order: 6 }, */
-];
-
 export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, projectName, onTemplateChange }: TemplateEditorProps) {
-  const [sections, setSections] = useState<TemplateSectionConfig[]>(initialSections);
+  const { t } = useTranslation();
+  
+  const getInitialSections = (): TemplateSectionConfig[] => [
+    { id: 'header', label: t('templateEditor.sections.header'), enabled: true, order: 0 },
+    { id: 'projectInfo', label: t('templateEditor.sections.projectInfo'), enabled: true, order: 1, layout: 'two-columns' },
+    { id: 'jobSummary', label: t('templateEditor.sections.jobSummary'), enabled: true, order: 2 },
+    { id: 'itemsTable', label: t('templateEditor.sections.itemsTable'), enabled: true, order: 3, required: true },
+    { id: 'paymentMethod', label: t('templateEditor.sections.paymentMethod'), enabled: true, order: 4, layout: 'two-columns' },
+    { id: 'contactInfo', label: t('templateEditor.sections.contactInfo'), enabled: true, order: 5, layout: 'two-columns' },
+    /* { id: 'signature', label: t('templateEditor.sections.signature'), enabled: false, order: 6 }, */
+  ];
+  
+  const [sections, setSections] = useState<TemplateSectionConfig[]>(getInitialSections());
+  
+  // Update section labels when language changes
+  useEffect(() => {
+    setSections(getInitialSections());
+  }, [t]);
   const [draggedSection, setDraggedSection] = useState<TemplateSectionId | null>(null);
   const [showUnitColumn, setShowUnitColumn] = useState(true);
+  const [selectedTheme, setSelectedTheme] = useState<string>('black');
   
   // Mobile floating panels state
   const [showMobileTools, setShowMobileTools] = useState(false);
   const [showMobileResources, setShowMobileResources] = useState(false);
   const [showMobileAIChat, setShowMobileAIChat] = useState(false);
+  const [clickedSection, setClickedSection] = useState<TemplateSectionId | null>(null);
+  
+  // Tour state
+  const [runTour, setRunTour] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const toolsBarRef = useRef<HTMLDivElement>(null);
+  const resourcesBarRef = useRef<HTMLDivElement>(null);
+  const aiChatRef = useRef<HTMLDivElement>(null);
+  const editableFieldRef = useRef<HTMLDivElement>(null);
+  
+  // Detect mobile first
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  // Check if tour has been shown before - after mobile detection
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem('template-editor-tour-seen');
+    if (!hasSeenTour) {
+      // Longer delay to ensure DOM is ready and mobile detection is complete
+      const timer = setTimeout(() => {
+        setRunTour(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile]);
+  
+  // Save template state
+  const { isAuthenticated } = useAuthStore();
+  const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [templateDescription, setTemplateDescription] = useState('');
+  
+  // Fetch saved templates
+  const { data: savedTemplates } = useQuery({
+    queryKey: ['estimate-templates'],
+    queryFn: () => api.get('/estimate-templates'),
+    enabled: isAuthenticated,
+  });
+  
+  // Save template mutation
+  const saveTemplateMutation = useMutation({
+    mutationFn: (data: { name: string; description?: string; templateData: any }) =>
+      api.post('/estimate-templates', data),
+    onSuccess: () => {
+      toast.success(t('templateEditor.saveTemplate.success'));
+      setShowSaveTemplateModal(false);
+      setTemplateName('');
+      setTemplateDescription('');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || t('templateEditor.saveTemplate.error'));
+    },
+  });
+  
+  const handleSaveTemplate = () => {
+    if (!isAuthenticated) {
+      toast.error(t('templateEditor.saveTemplate.error'));
+      return;
+    }
+    setShowSaveTemplateModal(true);
+  };
+  
+  const handleConfirmSaveTemplate = () => {
+    if (!templateName.trim()) {
+      toast.error(t('templateEditor.saveTemplate.nameRequiredError'));
+      return;
+    }
+    
+    const templateData = {
+      sections,
+      header,
+      jobSummary,
+      projectInfo,
+      paymentMethod,
+      contactInfo,
+      signature,
+      theme: selectedTheme,
+    };
+    
+    saveTemplateMutation.mutate({
+      name: templateName,
+      description: templateDescription,
+      templateData,
+    });
+  };
   
   const [header, setHeader] = useState<EstimateHeader>({
     companyName: '',
@@ -80,6 +188,7 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
   });
   
   const [projectInfo, setProjectInfo] = useState<ProjectInfo>({
+    clientName: '',
     projectAddress: '',
     city: '',
     state: '',
@@ -136,9 +245,10 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
         paymentMethod,
         contactInfo,
         signature,
-      });
+        theme: selectedTheme,
+      } as TemplateData & { theme: string });
     }
-  }, [sections, header, jobSummary, projectInfo, paymentMethod, contactInfo, signature, onTemplateChange]);
+  }, [sections, header, jobSummary, projectInfo, paymentMethod, contactInfo, signature, selectedTheme, onTemplateChange]);
 
   const handleLogoUpload = (file: File) => {
     const reader = new FileReader();
@@ -196,10 +306,214 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
     .filter(s => s.enabled)
     .sort((a, b) => a.order - b.order);
 
+  // Tour steps - filter out toolbar steps on mobile
+  const allTourSteps: Step[] = [
+    {
+      target: 'body',
+      content: t('tour.welcome.content'),
+      title: t('tour.welcome.title'),
+      placement: 'center' as const,
+      disableBeacon: true,
+      styles: {
+        options: {
+          width: isMobile ? '95vw' : 'auto',
+        },
+      },
+    },
+    {
+      target: isMobile ? '.tour-mobile-tools-button' : '.tour-tools-bar',
+      content: isMobile ? t('tour.mobileToolsButton.content') : t('tour.toolsBar.content'),
+      title: isMobile ? t('tour.mobileToolsButton.title') : t('tour.toolsBar.title'),
+      placement: isMobile ? ('left' as const) : ('right' as const),
+      disableBeacon: true,
+      disableScrolling: isMobile ? true : false,
+      floaterProps: isMobile ? {
+        disableAnimation: true,
+        placement: 'left',
+        styles: {
+          arrow: {
+            display: 'none',
+          },
+        },
+      } : undefined,
+      styles: isMobile ? {
+        options: {
+          zIndex: 10001,
+        },
+        tooltip: {
+          position: 'fixed',
+          maxWidth: '80vw',
+        },
+      } : undefined,
+    },
+    {
+      target: '.tour-themes',
+      content: t('tour.themes.content'),
+      title: t('tour.themes.title'),
+      placement: 'right' as const,
+      disableBeacon: true,
+    },
+    {
+      target: '.tour-templates',
+      content: t('tour.templates.content'),
+      title: t('tour.templates.title'),
+      placement: 'right' as const,
+      disableBeacon: true,
+    },
+    {
+      target: '.tour-sections',
+      content: t('tour.sections.content'),
+      title: t('tour.sections.title'),
+      placement: 'right' as const,
+      disableBeacon: true,
+    },
+    {
+      target: '.tour-resources-bar',
+      content: t('tour.resourcesBar.content'),
+      title: t('tour.resourcesBar.title'),
+      placement: 'bottom' as const,
+      disableBeacon: true,
+    },
+    {
+      target: '.tour-ai-chat',
+      content: t('tour.aiChat.content'),
+      title: t('tour.aiChat.title'),
+      placement: 'left' as const,
+      disableBeacon: true,
+    },
+    {
+      target: '.tour-editable-field',
+      content: t('tour.editableFields.content'),
+      title: t('tour.editableFields.title'),
+      placement: 'top' as const,
+      disableBeacon: true,
+    },
+    {
+      target: '.tour-hide-show',
+      content: t('tour.hideShow.content'),
+      title: t('tour.hideShow.title'),
+      placement: 'right' as const,
+      disableBeacon: true,
+    },
+    {
+      target: 'body',
+      content: t('tour.finish.content'),
+      title: t('tour.finish.title'),
+      placement: 'center' as const,
+      disableBeacon: true,
+      styles: {
+        options: {
+          width: isMobile ? '95vw' : 'auto',
+        },
+      },
+    },
+  ];
+  
+  // Filter steps for mobile (exclude toolbar-related steps, but keep mobile tools button)
+  const tourSteps = useMemo(() => {
+    if (isMobile) {
+      return allTourSteps.filter(step => {
+        const target = typeof step.target === 'string' ? step.target : '';
+        // Keep mobile tools button step, but exclude desktop toolbar steps
+        if (target.includes('tour-mobile-tools-button')) {
+          return true;
+        }
+        return !target.includes('tour-tools-bar') && 
+               !target.includes('tour-themes') && 
+               !target.includes('tour-templates') && 
+               !target.includes('tour-sections') &&
+               !target.includes('tour-hide-show') &&
+               !target.includes('tour-ai-chat'); // AI chat is also hidden on mobile initially
+      });
+    }
+    return allTourSteps;
+  }, [allTourSteps, isMobile]);
+
+  const handleJoyrideCallback = (data: CallBackProps) => {
+    const { status, action, index, type } = data;
+    
+    // Log for debugging
+    if (import.meta.env.DEV) {
+      console.log('Joyride callback:', { status, action, index, type, stepIndex: index });
+    }
+    
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      setRunTour(false);
+      localStorage.setItem('template-editor-tour-seen', 'true');
+    }
+  };
+
+  const startTour = () => {
+    setRunTour(true);
+  };
+
   return (
     <div className="flex gap-2 sm:gap-4 lg:gap-6 items-start">
+      {/* Tour Button - Positioned to avoid overlap with chat button */}
+      <button
+        onClick={startTour}
+        className={`fixed ${isMobile ? 'bottom-24 right-4' : 'bottom-4 right-4'} z-50 bg-[#F15A24] text-white p-3 rounded-full shadow-lg hover:bg-[#C2410C] transition-colors flex items-center gap-2`}
+        title={t('tour.welcome.title')}
+        aria-label={t('tour.welcome.title')}
+      >
+        <HelpCircle className="w-5 h-5" />
+        <span className="hidden sm:inline text-sm font-semibold">Tour</span>
+      </button>
+
+      <Joyride
+        steps={tourSteps}
+        run={runTour}
+        callback={handleJoyrideCallback}
+        continuous
+        showProgress
+        showSkipButton
+        styles={{
+          options: {
+            primaryColor: '#F15A24',
+            zIndex: 10000,
+          },
+          tooltip: {
+            borderRadius: '12px',
+            padding: '20px',
+            maxWidth: isMobile ? '95vw' : '400px',
+            width: isMobile ? '95vw' : 'auto',
+          },
+          tooltipContainer: {
+            textAlign: 'left',
+          },
+          buttonNext: {
+            backgroundColor: '#F15A24',
+            borderRadius: '8px',
+            padding: '10px 20px',
+          },
+          buttonBack: {
+            color: '#8A3B12',
+            marginRight: '10px',
+          },
+          buttonSkip: {
+            color: '#6C4A32',
+          },
+        }}
+        locale={{
+          back: t('common.back'),
+          close: t('common.close'),
+          last: t('tour.finish.title'),
+          next: t('common.next'),
+          skip: t('common.skip'),
+        }}
+        floaterProps={{
+          disableAnimation: true,
+        }}
+        spotlightClicks={false}
+        disableOverlayClose
+        scrollOffset={0}
+        scrollToFirstStep={false}
+        disableScrolling={false}
+        disableScrollParentFix={true}
+      />
+
       {/* Left Sidebar - Template Tools with equal width container */}
-      <div className="hidden sm:block w-12 sm:w-16 lg:w-80 flex-shrink-0">
+      <div ref={toolsBarRef} className="hidden sm:block w-12 sm:w-16 lg:w-80 flex-shrink-0 tour-tools-bar">
         <TemplateToolbar
           sections={sections}
           onToggleSection={handleToggleSection}
@@ -208,13 +522,25 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
           onDragEnd={() => setDraggedSection(null)}
           onReorderSections={handleReorderSections}
           draggedSection={draggedSection}
+          onThemeChange={setSelectedTheme}
+          onSaveTemplate={isAuthenticated ? handleSaveTemplate : undefined}
+          templateData={{
+            sections,
+            header,
+            jobSummary,
+            projectInfo,
+            paymentMethod,
+            contactInfo,
+            signature,
+            theme: selectedTheme,
+          }}
         />
       </div>
 
       {/* Center - Main Editor */}
       <div className="flex-1 flex flex-col items-center min-w-0">
         {/* Resource Bar */}
-        <div className="w-full max-w-4xl px-2 sm:px-0">
+        <div ref={resourcesBarRef} className="w-full max-w-4xl px-2 sm:px-0 tour-resources-bar">
           <ResourceBar selectedTrade={selectedTrade} onAddResource={handleAddResource} />
         </div>
 
@@ -224,28 +550,78 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
             switch (section.id) {
               case 'header':
                 return (
-                  <EstimateHeaderComponent
+                  <div 
                     key={section.id}
-                    header={header}
-                    onChange={(field, value) => setHeader({ ...header, [field]: value })}
-                    onLogoUpload={handleLogoUpload}
-                  />
+                    className="relative group tour-editable-field"
+                    onClick={() => {
+                      if (window.innerWidth < 640) {
+                        setClickedSection(section.id);
+                        setTimeout(() => setClickedSection(null), 3000);
+                      }
+                    }}
+                  >
+                    {clickedSection === section.id && window.innerWidth < 640 && (
+                      <div className="absolute top-full left-0 mt-2 z-50 bg-[#8A3B12] text-white text-xs px-4 py-3 rounded-lg shadow-xl max-w-[280px]">
+                        <p className="font-semibold mb-1">{t('templateEditor.sections.header')}</p>
+                        <p className="mb-2">{t('templateEditor.header.editCompanyInfo')}</p>
+                        <p className="text-[10px] opacity-90">{t('templateEditor.toolbar.useToolsPanel')}</p>
+                      </div>
+                    )}
+                    <EstimateHeaderComponent
+                      header={header}
+                      onChange={(field, value) => setHeader({ ...header, [field]: value })}
+                      onLogoUpload={handleLogoUpload}
+                    />
+                  </div>
                 );
               case 'jobSummary':
                 // Job Summary is now shown above items table, skip here
                 return null;
               case 'projectInfo':
                 return (
-                  <ProjectInfoSection
+                  <div 
                     key={section.id}
-                    projectInfo={projectInfo}
-                    onChange={(field, value) => setProjectInfo({ ...projectInfo, [field]: value })}
-                    layout={section.layout || 'two-columns'}
-                  />
+                    className="relative group"
+                    onClick={() => {
+                      if (window.innerWidth < 640) {
+                        setClickedSection(section.id);
+                        setTimeout(() => setClickedSection(null), 3000);
+                      }
+                    }}
+                  >
+                    {clickedSection === section.id && window.innerWidth < 640 && (
+                      <div className="absolute top-full left-0 mt-2 z-50 bg-[#8A3B12] text-white text-xs px-4 py-3 rounded-lg shadow-xl max-w-[280px]">
+                        <p className="font-semibold mb-1">{t('templateEditor.sections.projectInfo')}</p>
+                        <p className="mb-2">{t('templateEditor.projectInfo.editProjectInfo')}</p>
+                        <p className="text-[10px] opacity-90">{t('templateEditor.toolbar.useToolsPanelColumns')}</p>
+                      </div>
+                    )}
+                    <ProjectInfoSection
+                      projectInfo={projectInfo}
+                      onChange={(field, value) => setProjectInfo({ ...projectInfo, [field]: value })}
+                      layout={section.layout || 'two-columns'}
+                    />
+                  </div>
                 );
               case 'itemsTable':
                 return (
-                  <div key={section.id} className="mb-8">
+                  <div 
+                    key={section.id} 
+                    className="mb-8 relative group"
+                    onClick={() => {
+                      if (window.innerWidth < 640) {
+                        setClickedSection(section.id);
+                        setTimeout(() => setClickedSection(null), 3000);
+                      }
+                    }}
+                  >
+                    {clickedSection === section.id && window.innerWidth < 640 && (
+                      <div className="absolute top-full left-0 mt-2 z-50 bg-[#8A3B12] text-white text-xs px-4 py-3 rounded-lg shadow-xl max-w-[280px]">
+                        <p className="font-semibold mb-1">{t('templateEditor.sections.itemsTable')}</p>
+                        <p className="mb-2">{t('templateEditor.itemsTable.editItems')}</p>
+                        <p className="text-[10px] opacity-90">{t('templateEditor.toolbar.requiredSection')}</p>
+                      </div>
+                    )}
                     {/* Job Summary above table if enabled */}
                     {sections.find(s => s.id === 'jobSummary' && s.enabled) && (
                       <div className="mb-4">
@@ -263,36 +639,36 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
                       <div className="grid grid-cols-11 gap-1.5 mb-2 pb-1.5 border-b-2 border-[#8A3B12]">
                         <div className="col-span-5 text-left py-1 px-1.5 text-[#8A3B12] font-semibold">
                           <div className="flex items-center gap-1">
-                            <span className="text-xs">Description</span>
+                            <span className="text-xs">{t('templateEditor.itemsTable.description')}</span>
                             <InteractiveTooltip
-                              title="Description"
-                              content="Enter a detailed description of the item, material, labor, or service. Be specific with brand names, specifications, or model numbers to avoid confusion."
+                              title={t('templateEditor.itemsTable.description')}
+                              content={t('templateEditor.itemsTable.descriptionTooltip')}
                               size="sm"
                             />
                           </div>
                         </div>
                         <div className="col-span-2 text-right py-1 px-1.5 text-[#8A3B12] font-semibold">
                           <div className="flex items-center justify-end gap-1">
-                            <span className="text-xs">Quantity</span>
+                            <span className="text-xs">{t('templateEditor.itemsTable.quantity')}</span>
                             <InteractiveTooltip
-                              title="Quantity"
-                              content="Enter the quantity needed for this item. Use whole numbers or decimals as needed (e.g., 2, 1.5, 0.75)."
+                              title={t('templateEditor.itemsTable.quantity')}
+                              content={t('templateEditor.itemsTable.quantityTooltip')}
                               size="sm"
                             />
                           </div>
                         </div>
                         <div className="col-span-2 text-right py-1 px-1.5 text-[#8A3B12] font-semibold">
                           <div className="flex items-center justify-end gap-1">
-                            <span className="text-xs">Unit Price</span>
+                            <span className="text-xs">{t('templateEditor.itemsTable.unitPrice')}</span>
                             <InteractiveTooltip
-                              title="Unit Price"
-                              content="Enter the cost per unit in dollars. Use decimal format (e.g., 12.50, 45.00). The total will calculate automatically."
+                              title={t('templateEditor.itemsTable.unitPrice')}
+                              content={t('templateEditor.itemsTable.unitPriceTooltip')}
                               size="sm"
                             />
                           </div>
                         </div>
                         <div className="col-span-1 text-right py-1 px-1.5 text-[#8A3B12] font-semibold">
-                          <span className="text-xs">Total</span>
+                          <span className="text-xs">{t('templateEditor.itemsTable.total')}</span>
                         </div>
                         <div className="col-span-1"></div>
                       </div>
@@ -309,7 +685,7 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
                                 type="text"
                                 value={item.description}
                                 onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
-                                placeholder="e.g., Portland cement"
+                                placeholder={t('templateEditor.itemsTable.descriptionPlaceholder')}
                                 className="w-full bg-white border border-[#F4C197] rounded px-2 py-1.5 text-xs text-[#6C4A32] focus:outline-none focus:border-[#F15A24] truncate"
                               />
                             </div>
@@ -342,7 +718,7 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
                               <button
                                 onClick={() => removeLineItem(item.id)}
                                 className="p-1 hover:bg-red-100 rounded transition-colors flex-shrink-0"
-                                title="Remove item"
+                                title={t('templateEditor.itemsTable.removeItem')}
                               >
                                 <X className="w-3.5 h-3.5 text-red-600" />
                               </button>
@@ -361,7 +737,7 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
                               type="text"
                               value={item.description}
                               onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
-                              placeholder="Description"
+                              placeholder={t('templateEditor.itemsTable.descriptionPlaceholder')}
                               className="flex-1 bg-white border border-[#F4C197] rounded px-2 py-1.5 text-xs text-[#6C4A32] focus:outline-none focus:border-[#F15A24] min-w-0"
                             />
                             <button
@@ -398,7 +774,7 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
                             </div>
                           </div>
                           <div className="pt-1.5 border-t border-[#F4C197] flex justify-between items-center">
-                            <span className="text-[10px] text-[#C05A2B] font-semibold">Total:</span>
+                            <span className="text-[10px] text-[#C05A2B] font-semibold">{t('templateEditor.itemsTable.total')}:</span>
                             <span className="text-sm font-bold text-[#F15A24]">
                               ${(item.quantity * item.unitPrice).toFixed(2)}
                             </span>
@@ -413,12 +789,12 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
                       className="w-full border-2 border-dashed border-[#F15A24] text-[#F15A24] hover:bg-[#FFF7EA] mb-4 text-xs sm:text-sm py-2"
                     >
                       <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-                      Add Line Item
+                      {t('templateEditor.itemsTable.addLineItem')}
                     </Button>
 
                     <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t-2 border-[#8A3B12]">
                       <div className="flex justify-between items-center flex-wrap gap-2">
-                        <span className="text-base sm:text-xl font-display font-bold text-[#8A3B12]">Estimate Total</span>
+                        <span className="text-base sm:text-xl font-display font-bold text-[#8A3B12]">{t('templateEditor.itemsTable.estimateTotal')}</span>
                         <span className="text-lg sm:text-2xl font-display font-bold text-[#F15A24]">
                           ${calculateTotal().toFixed(2)}
                         </span>
@@ -490,7 +866,7 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
       </div>
 
       {/* Right Sidebar - AI Chat Panel with equal width container, vertically centered */}
-      <div className="hidden lg:block w-64 lg:w-80 flex-shrink-0 flex items-center">
+      <div ref={aiChatRef} className="hidden lg:block w-64 lg:w-80 flex-shrink-0 flex items-center tour-ai-chat">
         <AIChatPanel
           onGenerateEstimate={(prompt) => {
             // TODO: Implement AI estimate generation
@@ -503,12 +879,20 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
       <>
       {/* Mobile Tools Tab - Left Side */}
       <button
-        onClick={() => setShowMobileTools(!showMobileTools)}
-        className="sm:hidden fixed left-0 top-1/2 -translate-y-1/2 z-[40] bg-[#F15A24] text-white p-2 rounded-r-lg shadow-lg hover:bg-[#C2410C] transition-colors"
-        aria-label="Toggle Tools"
-      >
-        <Settings className="w-5 h-5" />
-      </button>
+        onClick={() => {
+          if (!runTour) {
+            setShowMobileTools(!showMobileTools);
+          }
+        }}
+          className="sm:hidden fixed left-0 top-1/2 -translate-y-1/2 z-[40] bg-[#F15A24] text-white px-2 py-3 rounded-r-lg shadow-lg hover:bg-[#C2410C] transition-colors flex flex-col items-center gap-1 tour-mobile-tools-button"
+          aria-label={t('templateEditor.mobile.toggleTools')}
+          style={{ pointerEvents: runTour ? 'auto' : 'auto' }}
+        >
+          <Settings className="w-5 h-5" />
+          <span className="text-[10px] font-medium leading-tight writing-vertical-rl" style={{ writingMode: 'vertical-rl', textOrientation: 'upright' }}>
+            {t('templateEditor.mobile.tools')}
+          </span>
+        </button>
 
       {/* Mobile Tools Floating Panel */}
       {showMobileTools && (
@@ -523,7 +907,7 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
             <button
               onClick={() => setShowMobileTools(false)}
               className="absolute -right-8 top-1/2 -translate-y-1/2 bg-[#F15A24] text-white p-1.5 rounded-r-lg hover:bg-[#C2410C] transition-colors z-10 shadow-lg"
-              aria-label="Close Tools"
+                aria-label={t('templateEditor.mobile.closeTools')}
             >
               <X className="w-4 h-4" />
             </button>
@@ -537,6 +921,18 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
                 onDragEnd={() => setDraggedSection(null)}
                 onReorderSections={handleReorderSections}
                 draggedSection={draggedSection}
+                onThemeChange={setSelectedTheme}
+                onSaveTemplate={isAuthenticated ? handleSaveTemplate : undefined}
+                templateData={{
+                  sections,
+                  header,
+                  jobSummary,
+                  projectInfo,
+                  paymentMethod,
+                  contactInfo,
+                  signature,
+                  theme: selectedTheme,
+                }}
               />
             </div>
           </div>
@@ -549,7 +945,7 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
           <button
             onClick={() => setShowMobileResources(!showMobileResources)}
             className="sm:hidden fixed top-0 left-1/2 -translate-x-1/2 z-40 bg-[#F15A24] text-white px-4 py-2 rounded-b-lg shadow-lg hover:bg-[#C2410C] transition-colors flex items-center gap-2"
-            aria-label="Toggle Resources"
+              aria-label={t('templateEditor.mobile.toggleResources')}
           >
             <Sparkles className="w-4 h-4" />
             <span className="text-sm font-medium">Resources</span>
@@ -624,7 +1020,7 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
       <button
         onClick={() => setShowMobileAIChat(!showMobileAIChat)}
         className="sm:hidden fixed bottom-6 right-6 z-[40] w-14 h-14 bg-[#F15A24] text-white rounded-full shadow-2xl hover:bg-[#C2410C] transition-colors flex items-center justify-center"
-        aria-label="Toggle AI Assistant"
+          aria-label={t('templateEditor.mobile.toggleAIChat')}
       >
         <MessageCircle className="w-6 h-6" />
       </button>
@@ -663,6 +1059,56 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
         </>
       )}
       </>
+      
+      {/* Save Template Modal */}
+      <Modal
+        isOpen={showSaveTemplateModal}
+        onClose={() => setShowSaveTemplateModal(false)}
+        title={t('templateEditor.saveTemplate.title')}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-[#8A3B12] mb-2">
+              {t('templateEditor.saveTemplate.nameLabel')} <span className="text-[#C05A2B]">{t('templateEditor.saveTemplate.nameRequired')}</span>
+            </label>
+            <Input
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder={t('templateEditor.saveTemplate.namePlaceholder')}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#8A3B12] mb-2">
+              {t('templateEditor.saveTemplate.descriptionLabel')}
+            </label>
+            <textarea
+              value={templateDescription}
+              onChange={(e) => setTemplateDescription(e.target.value)}
+              placeholder={t('templateEditor.saveTemplate.descriptionPlaceholder')}
+              className="w-full p-3 border-2 border-[#F4C197] rounded-xl focus:outline-none focus:border-[#F15A24] text-sm text-[#6C4A32]"
+              rows={3}
+            />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <Button
+              variant="primary"
+              onClick={handleConfirmSaveTemplate}
+              disabled={!templateName.trim() || saveTemplateMutation.isPending}
+              className="flex-1"
+            >
+              {saveTemplateMutation.isPending ? t('templateEditor.saveTemplate.saving') : t('templateEditor.saveTemplate.save')}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setShowSaveTemplateModal(false)}
+              className="flex-1"
+            >
+              {t('templateEditor.saveTemplate.cancel')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

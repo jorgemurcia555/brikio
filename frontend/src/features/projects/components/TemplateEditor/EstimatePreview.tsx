@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { EstimateHeader, JobSummary, ProjectInfo, PaymentMethod, ContactInfo, Signature, TemplateSectionConfig } from '../../types/template.types';
 import { LineItem } from './TemplateEditor';
 import { EstimateHeader as EstimateHeaderComponent } from './EstimateHeader';
@@ -6,6 +7,7 @@ import { ProjectInfoSection } from './ProjectInfoSection';
 import { PaymentMethodSection } from './PaymentMethodSection';
 import { ContactInfoSection } from './ContactInfoSection';
 import { SignatureSection } from './SignatureSection';
+import { useTranslation } from 'react-i18next';
 
 interface EstimatePreviewProps {
   projectName?: string;
@@ -17,6 +19,7 @@ interface EstimatePreviewProps {
   paymentMethod: PaymentMethod;
   contactInfo: ContactInfo;
   signature: Signature;
+  theme?: string;
 }
 
 export function EstimatePreview({
@@ -29,17 +32,82 @@ export function EstimatePreview({
   paymentMethod,
   contactInfo,
   signature,
+  theme = 'black',
 }: EstimatePreviewProps) {
+  const { t } = useTranslation();
   const sortedSections = [...sections]
     .filter(s => s.enabled)
     .sort((a, b) => a.order - b.order);
+
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const calculateTotal = () => {
     return lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
   };
 
+  // Theme colors mapping
+  const getThemeColors = () => {
+    const themes: Record<string, { primary: string; secondary: string; text: string; border: string }> = {
+      black: { primary: '#000000', secondary: '#1F2937', text: '#111827', border: '#E5E7EB' },
+      company: { primary: '#F15A24', secondary: '#8A3B12', text: '#8A3B12', border: '#F4C197' },
+      orange: { primary: '#F15A24', secondary: '#FF8C42', text: '#8A3B12', border: '#F4C197' },
+      green: { primary: '#22C55E', secondary: '#16A34A', text: '#166534', border: '#86EFAC' },
+      blue: { primary: '#3B82F6', secondary: '#2563EB', text: '#1E40AF', border: '#93C5FD' },
+      red: { primary: '#EF4444', secondary: '#DC2626', text: '#991B1B', border: '#FCA5A5' },
+    };
+    return themes[theme] || themes.black;
+  };
+
+  const themeColors = getThemeColors();
+
   return (
-    <div className="bg-white w-full max-w-4xl mx-auto shadow-sm" style={{ minHeight: '800px', padding: '60px 80px', fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', lineHeight: '1.6' }}>
+    <div className="relative w-full">
+      {/* Zoom Controls - Mobile Only */}
+      {isMobile && (
+        <div className="fixed top-20 right-4 z-50 flex flex-col gap-2 bg-white border-2 border-[#F4C197] rounded-lg p-2 shadow-lg">
+          <button
+            onClick={() => setZoomLevel(prev => Math.min(prev + 0.1, 2))}
+            className="p-2 bg-[#F15A24] text-white rounded hover:bg-[#C2410C] transition-colors"
+            aria-label={t('templateEditor.preview.zoomIn')}
+          >
+            <span className="text-lg font-bold">+</span>
+          </button>
+          <button
+            onClick={() => setZoomLevel(prev => Math.max(prev - 0.1, 0.5))}
+            className="p-2 bg-[#F15A24] text-white rounded hover:bg-[#C2410C] transition-colors"
+            aria-label={t('templateEditor.preview.zoomOut')}
+          >
+            <span className="text-lg font-bold">−</span>
+          </button>
+          <div className="text-xs text-center text-[#8A3B12] font-semibold px-1">
+            {Math.round(zoomLevel * 100)}%
+          </div>
+        </div>
+      )}
+      
+      <div 
+        className="bg-white w-full max-w-4xl mx-auto shadow-sm" 
+        style={{ 
+          minHeight: '800px', 
+          padding: isMobile ? '20px' : '60px 80px', 
+          fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', 
+          lineHeight: '1.6',
+          transform: isMobile ? `scale(${zoomLevel})` : 'none',
+          transformOrigin: 'top left',
+          width: isMobile ? `${100 / zoomLevel}%` : '100%',
+          color: themeColors.text,
+        }}
+      >
       {sortedSections.map((section) => {
         switch (section.id) {
           case 'header':
@@ -48,7 +116,7 @@ export function EstimatePreview({
               return null;
             }
             return (
-              <div key={section.id} className="mb-10 pb-8" style={{ borderBottom: '2px solid #8A3B12' }}>
+              <div key={section.id} className="mb-10 pb-8" style={{ borderBottom: `2px solid ${themeColors.primary}` }}>
                 <EstimateHeaderComponent
                   header={header}
                   onChange={() => {}}
@@ -63,7 +131,7 @@ export function EstimatePreview({
               return null;
             }
             return (
-              <div key={section.id} className="mb-8 pb-6" style={{ borderBottom: '1px solid #F4C197' }}>
+              <div key={section.id} className="mb-8 pb-6" style={{ borderBottom: `1px solid ${themeColors.border}` }}>
                 <JobSummarySection
                   jobSummary={jobSummary}
                   onChange={() => {}}
@@ -79,7 +147,7 @@ export function EstimatePreview({
               return null;
             }
             return (
-              <div key={section.id} className="mb-8 pb-6" style={{ borderBottom: '1px solid #F4C197' }}>
+              <div key={section.id} className="mb-8 pb-6" style={{ borderBottom: `1px solid ${themeColors.border}` }}>
                 <ProjectInfoSection
                   projectInfo={projectInfo}
                   onChange={() => {}}
@@ -95,11 +163,11 @@ export function EstimatePreview({
                 <div className="hidden md:block mb-6">
                   <table className="w-full border-collapse" style={{ borderSpacing: 0 }}>
                     <thead>
-                      <tr style={{ borderBottom: '2px solid #8A3B12' }}>
-                        <th className="text-left py-4 px-4 text-sm font-semibold text-[#8A3B12]" style={{ borderBottom: '2px solid #8A3B12' }}>Description</th>
-                        <th className="text-right py-4 px-4 text-sm font-semibold text-[#8A3B12]" style={{ borderBottom: '2px solid #8A3B12' }}>Quantity</th>
-                        <th className="text-right py-4 px-4 text-sm font-semibold text-[#8A3B12]" style={{ borderBottom: '2px solid #8A3B12' }}>Unit Price</th>
-                        <th className="text-right py-4 px-4 text-sm font-semibold text-[#8A3B12]" style={{ borderBottom: '2px solid #8A3B12' }}>Total</th>
+                      <tr style={{ borderBottom: `2px solid ${themeColors.primary}` }}>
+                        <th className="text-left py-4 px-4 text-sm font-semibold" style={{ borderBottom: `2px solid ${themeColors.primary}`, color: themeColors.primary }}>{t('templateEditor.itemsTable.description')}</th>
+                        <th className="text-right py-4 px-4 text-sm font-semibold" style={{ borderBottom: `2px solid ${themeColors.primary}`, color: themeColors.primary }}>{t('templateEditor.itemsTable.quantity')}</th>
+                        <th className="text-right py-4 px-4 text-sm font-semibold" style={{ borderBottom: `2px solid ${themeColors.primary}`, color: themeColors.primary }}>{t('templateEditor.itemsTable.unitPrice')}</th>
+                        <th className="text-right py-4 px-4 text-sm font-semibold" style={{ borderBottom: `2px solid ${themeColors.primary}`, color: themeColors.primary }}>{t('templateEditor.itemsTable.total')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -107,24 +175,24 @@ export function EstimatePreview({
                         <tr 
                           key={item.id}
                           style={{ 
-                            borderBottom: index < lineItems.length - 1 ? '1px solid #F4C197' : 'none',
-                            backgroundColor: index % 2 === 0 ? 'white' : '#FFF7EA'
+                            borderBottom: index < lineItems.length - 1 ? `1px solid ${themeColors.border}` : 'none',
+                            backgroundColor: index % 2 === 0 ? 'white' : (theme === 'black' ? '#F9FAFB' : '#FFF7EA')
                           }}
                         >
-                          <td className="py-3 px-4 text-sm text-[#6C4A32]" style={{ wordBreak: 'break-word' }}>{item.description || '—'}</td>
-                          <td className="py-3 px-4 text-sm text-right text-[#6C4A32]">{item.quantity || 0}</td>
-                          <td className="py-3 px-4 text-sm text-right text-[#6C4A32]">${(item.unitPrice || 0).toFixed(2)}</td>
-                          <td className="py-3 px-4 text-sm text-right font-semibold text-[#8A3B12]">${(item.quantity * item.unitPrice).toFixed(2)}</td>
+                          <td className="py-3 px-4 text-sm" style={{ wordBreak: 'break-word', color: themeColors.text }}>{item.description || '—'}</td>
+                          <td className="py-3 px-4 text-sm text-right" style={{ color: themeColors.text }}>{item.quantity || 0}</td>
+                          <td className="py-3 px-4 text-sm text-right" style={{ color: themeColors.text }}>${(item.unitPrice || 0).toFixed(2)}</td>
+                          <td className="py-3 px-4 text-sm text-right font-semibold" style={{ color: themeColors.primary }}>${(item.quantity * item.unitPrice).toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
 
-                  <div className="mt-8 pt-6" style={{ borderTop: '2px solid #8A3B12' }}>
+                  <div className="mt-8 pt-6" style={{ borderTop: `2px solid ${themeColors.primary}` }}>
                     <div className="flex justify-end">
                       <div className="text-right">
-                        <div className="text-lg font-semibold text-[#8A3B12] mb-2">Total Estimate</div>
-                        <div className="text-2xl font-bold text-[#F15A24]">
+                        <div className="text-lg font-semibold mb-2" style={{ color: themeColors.primary }}>{t('templateEditor.preview.totalEstimate')}</div>
+                        <div className="text-2xl font-bold" style={{ color: themeColors.primary }}>
                           ${calculateTotal().toFixed(2)}
                         </div>
                       </div>
@@ -139,16 +207,16 @@ export function EstimatePreview({
                       <div className="text-sm font-semibold text-[#8A3B12] mb-2 break-words">{item.description || '—'}</div>
                       <div className="grid grid-cols-2 gap-3 mb-2 text-sm">
                         <div>
-                          <span className="text-[#C05A2B] font-semibold">Quantity: </span>
+                          <span className="text-[#C05A2B] font-semibold">{t('templateEditor.itemsTable.quantity')}: </span>
                           <span className="text-[#6C4A32]">{item.quantity || 0}</span>
                         </div>
                         <div>
-                          <span className="text-[#C05A2B] font-semibold">Unit Price: </span>
+                          <span className="text-[#C05A2B] font-semibold">{t('templateEditor.itemsTable.unitPrice')}: </span>
                           <span className="text-[#6C4A32]">${(item.unitPrice || 0).toFixed(2)}</span>
                         </div>
                       </div>
                       <div className="pt-2 border-t border-[#F4C197] flex justify-between items-center">
-                        <span className="text-sm font-semibold text-[#8A3B12]">Total:</span>
+                        <span className="text-sm font-semibold text-[#8A3B12]">{t('templateEditor.itemsTable.total')}:</span>
                         <span className="text-base font-bold text-[#F15A24]">
                           ${(item.quantity * item.unitPrice).toFixed(2)}
                         </span>
@@ -157,7 +225,7 @@ export function EstimatePreview({
                   ))}
                   <div className="mt-4 pt-4 border-t-2 border-[#8A3B12]">
                     <div className="flex justify-between items-center">
-                      <span className="text-base font-semibold text-[#8A3B12]">Total Estimate</span>
+                      <span className="text-base font-semibold text-[#8A3B12]">{t('templateEditor.preview.totalEstimate')}</span>
                       <span className="text-xl font-bold text-[#F15A24]">
                         ${calculateTotal().toFixed(2)}
                       </span>
@@ -178,7 +246,7 @@ export function EstimatePreview({
                 return null;
               }
               return (
-                <div key={`${section.id}-${contactInfoSection.id}`} className="mb-8 pt-8" style={{ borderTop: '2px solid #F4C197' }}>
+                <div key={`${section.id}-${contactInfoSection.id}`} className="mb-8 pt-8" style={{ borderTop: `2px solid ${themeColors.border}` }}>
                   <div className="grid grid-cols-2 gap-12">
                     <PaymentMethodSection
                       paymentMethod={paymentMethod}
@@ -200,7 +268,7 @@ export function EstimatePreview({
               return null;
             }
             return (
-              <div key={section.id} className="mb-8 pt-8" style={{ borderTop: '2px solid #F4C197' }}>
+              <div key={section.id} className="mb-8 pt-8" style={{ borderTop: `2px solid ${themeColors.border}` }}>
                 <PaymentMethodSection
                   paymentMethod={paymentMethod}
                   onChange={() => {}}
@@ -218,7 +286,7 @@ export function EstimatePreview({
             const paymentMethodSection = sections.find(s => s.id === 'paymentMethod' && s.enabled);
             if (!paymentMethodSection) {
               return (
-                <div key={section.id} className="mb-8 pt-8" style={{ borderTop: '2px solid #F4C197' }}>
+                <div key={section.id} className="mb-8 pt-8" style={{ borderTop: `2px solid ${themeColors.border}` }}>
                   <ContactInfoSection
                     contactInfo={contactInfo}
                     onChange={() => {}}
@@ -243,6 +311,7 @@ export function EstimatePreview({
             return null;
         }
       })}
+      </div>
     </div>
   );
 }

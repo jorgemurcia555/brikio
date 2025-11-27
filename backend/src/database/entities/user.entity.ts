@@ -14,6 +14,7 @@ import { Project } from './project.entity';
 import { Client } from './client.entity';
 import { Material } from './material.entity';
 import { TemplateItem } from './template-item.entity';
+import { EstimateTemplate } from './estimate-template.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -89,6 +90,9 @@ export class User {
 
   @OneToMany(() => TemplateItem, (template) => template.user)
   customTemplates: TemplateItem[];
+
+  @OneToMany(() => EstimateTemplate, (template) => template.user)
+  estimateTemplates: EstimateTemplate[];
 
   @CreateDateColumn()
   createdAt: Date;

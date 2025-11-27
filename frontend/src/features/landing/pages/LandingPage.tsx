@@ -262,7 +262,7 @@ export function LandingPage() {
             <Button variant="ghost" onClick={() => navigate('/login')}>
               {t('nav.signIn')}
             </Button>
-            <Button variant="primary" onClick={() => navigate('/projects/new')}>
+            <Button variant="primary" onClick={() => navigate('/projects/new')} className="hidden md:flex">
               {t('nav.tryNow')}
             </Button>
           </div>

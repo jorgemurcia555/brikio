@@ -39,7 +39,7 @@ async function runSeeds() {
     price: 0,
     billingInterval: 'month',
     features: {
-      maxEstimates: null, // Unlimited estimates (no downloads)
+      maxEstimates: 3, // Limited to 3 estimates in 7-day trial
       aiEnabled: false,
       csvImport: false,
       advancedReports: false,

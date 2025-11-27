@@ -3,6 +3,7 @@ import { FileText } from 'lucide-react';
 import { InteractiveTooltip } from '../../../../components/ui/InteractiveTooltip';
 import { EditableField } from './EditableField';
 import { JobSummary } from '../../types/template.types';
+import { useTranslation } from 'react-i18next';
 
 interface JobSummarySectionProps {
   jobSummary: JobSummary;
@@ -12,6 +13,7 @@ interface JobSummarySectionProps {
 }
 
 export function JobSummarySection({ jobSummary, onChange, projectName, readOnly }: JobSummarySectionProps) {
+  const { t } = useTranslation();
   const [isEditingJobTitle, setIsEditingJobTitle] = useState(false);
 
   if (readOnly) {
@@ -50,7 +52,7 @@ export function JobSummarySection({ jobSummary, onChange, projectName, readOnly 
             }}
             onEditStart={() => setIsEditingJobTitle(true)}
             onEditEnd={() => setIsEditingJobTitle(false)}
-            placeholder={projectName || "Job Title (e.g., Kitchen Renovation)"}
+            placeholder={projectName || t('templateEditor.jobSummary.jobTitlePlaceholder')}
             displayClassName="text-2xl font-display font-bold text-[#8A3B12]"
             className="text-2xl font-display font-bold"
           />
@@ -58,7 +60,7 @@ export function JobSummarySection({ jobSummary, onChange, projectName, readOnly 
         <EditableField
           value={jobSummary.jobDescription}
           onChange={(value) => onChange('jobDescription', value)}
-          placeholder="Job Description / Work Slogan"
+          placeholder={t('templateEditor.jobSummary.jobDescriptionPlaceholder')}
           type="textarea"
           rows={2}
           displayClassName="text-sm text-[#6C4A32] leading-relaxed"

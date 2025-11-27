@@ -95,6 +95,9 @@ export class EstimatesService {
 
     const version = lastEstimate ? lastEstimate.version + 1 : 1;
 
+    // Increment usage count after successful creation
+    await this.billingService.incrementUsage(userId);
+
     const estimate = this.estimatesRepository.create({
       project,
       version,

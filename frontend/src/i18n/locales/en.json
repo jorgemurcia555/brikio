@@ -317,7 +317,10 @@
     "noAccount": "Don't have an account?",
     "signUpLink": "Sign up free",
     "success": "Welcome back!",
-    "error": "Error signing in"
+    "error": "Error signing in",
+    "orContinueWith": "Or continue with",
+    "googleSignIn": "Sign in with Google",
+    "processing": "Processing..."
   },
   "register": {
     "title": "Create Account",
@@ -336,7 +339,8 @@
     },
     "password": {
       "label": "Password",
-      "placeholder": "••••••••"
+      "placeholder": "••••••••",
+      "helper": "Minimum 8 characters"
     },
     "confirmPassword": {
       "label": "Confirm Password",
@@ -347,11 +351,8 @@
     "signInLink": "Sign in",
     "success": "Account created successfully!",
     "error": "Error creating account",
-    "password": {
-      "label": "Password",
-      "placeholder": "••••••••",
-      "helper": "Minimum 8 characters"
-    }
+    "orContinueWith": "Or continue with",
+    "googleSignUp": "Sign up with Google"
   },
   "dashboard": {
     "welcome": "Welcome back",
@@ -461,6 +462,231 @@
       "title": "Free Trial Active",
       "daysLeft": "{{days}} days left",
       "upgradeNow": "Upgrade Now"
+    }
+  },
+  "templateEditor": {
+    "sections": {
+      "header": "Header",
+      "jobSummary": "Job Summary",
+      "projectInfo": "Project Info",
+      "itemsTable": "Items Table",
+      "paymentMethod": "Payment Method",
+      "contactInfo": "Contact Info",
+      "signature": "Signature"
+    },
+    "toolbar": {
+      "theme": "Theme",
+      "templates": "Templates",
+      "saveTemplate": "Save Template",
+      "colorTheme": "Color / Theme",
+      "useToolsPanel": "Use the Tools panel to hide/show or change layout",
+      "useToolsPanelColumns": "Use the Tools panel to hide/show or change layout (1 or 2 columns)",
+      "themes": {
+        "black": "Black (Formal)",
+        "company": "Company Colors",
+        "orange": "Orange",
+        "green": "Green",
+        "blue": "Blue",
+        "red": "Red"
+      },
+      "templateTypes": {
+        "classic": "Classic",
+        "classicDesc": "Traditional layout with header and sections",
+        "minimal": "Minimal",
+        "minimalDesc": "Clean and simple design",
+        "centeredLogo": "Centered Logo",
+        "centeredLogoDesc": "Logo centered in header",
+        "sideBand": "Side Band",
+        "sideBandDesc": "Color band on the side"
+      },
+      "layout": "Layout",
+      "oneColumn": "1 Column",
+      "twoColumns": "2 Columns",
+      "hideSection": "Hide Section",
+      "showSection": "Show Section",
+      "requiredSection": "Required section",
+      "dragToReorder": "Drag and drop to reorder sections",
+      "thisSectionRequired": "This section is required",
+      "canEnableDisable": "You can enable or disable this section"
+    },
+    "header": {
+      "title": "Header Information",
+      "companyName": "Company Name",
+      "companyNameDesc": "Your business name will appear prominently at the top",
+      "tagline": "Tagline",
+      "taglineDesc": "Optional brief description of what your company does",
+      "logo": "Logo",
+      "logoDesc": "Upload your company logo. It will appear on every page of the PDF",
+      "estimateDetails": "Estimate Details",
+      "estimateDetailsDesc": "Number, date, and work duration help organize your estimates",
+      "companyNamePlaceholder": "Company Name",
+      "taglinePlaceholder": "What does your company do? (optional)",
+      "estimateNumberPlaceholder": "0001",
+      "uploadLogo": "Upload Logo",
+      "estimateNumber": "Estimate #",
+      "date": "Date",
+      "duration": "Duration",
+      "editCompanyInfo": "Edit company name, tagline, logo, and estimate details. Click fields to edit"
+    },
+    "jobSummary": {
+      "jobTitlePlaceholder": "Job Title (e.g., Kitchen Renovation)",
+      "jobDescriptionPlaceholder": "Job Description / Work Slogan"
+    },
+    "projectInfo": {
+      "title": "Project Information",
+      "client": "Client",
+      "clientPlaceholder": "Client name",
+      "clientSearchPlaceholder": "Enter or search client name",
+      "searchClients": "Search clients",
+      "searchClientsPlaceholder": "Search clients...",
+      "noClientsFound": "No clients found",
+      "noClientsSaved": "No clients saved yet",
+      "address": "Address",
+      "addressPlaceholder": "123 Main Street",
+      "city": "City",
+      "cityPlaceholder": "City",
+      "state": "State",
+      "statePlaceholder": "State",
+      "country": "Country",
+      "countryPlaceholder": "Country",
+      "date": "Date",
+      "duration": "Duration",
+      "durationPlaceholder": "3 months",
+      "editProjectInfo": "Edit project address, location, dates, and client information. Click fields to edit"
+    },
+    "itemsTable": {
+      "description": "Description",
+      "descriptionPlaceholder": "Description",
+      "descriptionTooltip": "Enter a detailed description of the item, material, labor, or service. Be specific with brand names, specifications, or model numbers to avoid confusion",
+      "quantity": "Quantity",
+      "quantityTooltip": "Enter the quantity needed for this item. Use whole numbers or decimals as needed (e.g., 2, 1.5, 0.75)",
+      "unit": "Unit",
+      "unitPrice": "Unit Price",
+      "unitPriceTooltip": "Enter the cost per unit in dollars. Use decimal format (e.g., 12.50, 45.00). The total will calculate automatically",
+      "total": "Total",
+      "removeItem": "Remove item",
+      "addLineItem": "Add Line Item",
+      "estimateTotal": "Estimate Total",
+      "editItems": "Add line items with description, quantity, unit, and price. Click fields to edit"
+    },
+    "paymentMethod": {
+      "bankName": "Bank Name",
+      "bankNamePlaceholder": "Bank Name",
+      "accountNumber": "Account Number",
+      "accountNumberPlaceholder": "Account Number / IBAN",
+      "paymentMode": "Payment Mode",
+      "paymentModePlaceholder": "Bank transfer, Cash, Check, Card, Online, etc.",
+      "bank": "Bank",
+      "account": "Account",
+      "mode": "Mode"
+    },
+    "contactInfo": {
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+1 (555) 123-4567",
+      "website": "Website",
+      "websitePlaceholder": "https://example.com"
+    },
+    "resources": {
+      "title": "Quick Resources",
+      "tooltip": "Quick Resources - Click to add items to your estimate",
+      "tooltipMobile": "Quick Resources - Tap items to add to estimate"
+    },
+    "aiChat": {
+      "title": "AI Assistant",
+      "placeholder": "Type your message here...",
+      "send": "Send"
+    },
+    "saveTemplate": {
+      "title": "Save Template",
+      "nameLabel": "Template Name",
+      "nameRequired": "*",
+      "namePlaceholder": "e.g., Standard Estimate Template",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "Describe this template...",
+      "save": "Save Template",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "success": "Template saved successfully!",
+      "error": "Failed to save template",
+      "nameRequiredError": "Please enter a template name"
+    },
+    "preview": {
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "totalEstimate": "Total Estimate"
+    },
+    "mobile": {
+      "tools": "TOOLS",
+      "toggleTools": "Toggle Tools",
+      "closeTools": "Close Tools",
+      "toggleResources": "Toggle Resources",
+      "toggleAIChat": "Toggle AI Assistant"
+    }
+  },
+  "admin": {
+    "templates": {
+      "title": "Saved Templates",
+      "subtitle": "Manage all saved estimate templates",
+      "noTemplates": "No templates found",
+      "noTemplatesDescription": "Templates saved by users will appear here",
+      "view": "View",
+      "used": "Used",
+      "times": "times",
+      "time": "time",
+      "created": "Created",
+      "user": "User"
+    }
+  },
+  "tour": {
+    "welcome": {
+      "title": "Welcome to the Template Editor!",
+      "content": "Let's take a quick tour to learn how to create professional estimates. Click Next to continue."
+    },
+    "toolsBar": {
+      "title": "Tools Bar",
+      "content": "This is your main control panel. Here you can change themes, select templates, and manage sections. Click on any icon to open its options panel."
+    },
+    "mobileToolsButton": {
+      "title": "Tools Button",
+      "content": "On mobile, the tools are hidden to save space. Click this button to open the tools panel where you can change themes, select templates, and manage sections."
+    },
+    "themes": {
+      "title": "Themes & Colors",
+      "content": "Choose a color theme for your estimate. The theme affects the final document appearance. Black is the most formal option."
+    },
+    "templates": {
+      "title": "Templates",
+      "content": "Select a template layout for your estimate. You can also save your current configuration as a template for future use."
+    },
+    "sections": {
+      "title": "Sections Management",
+      "content": "Each section can be shown or hidden, and you can change its layout (1 or 2 columns). Drag sections to reorder them. Required sections cannot be hidden."
+    },
+    "resourcesBar": {
+      "title": "Quick Resources",
+      "content": "Click on any resource to quickly add it to your estimate. Resources include common materials and items. You can also add your own custom resources."
+    },
+    "aiChat": {
+      "title": "AI Assistant (Premium)",
+      "content": "Get help from our AI assistant to optimize your estimate, suggest materials, or review your work. This feature is available for Premium users."
+    },
+    "editableFields": {
+      "title": "Editable Fields",
+      "content": "Click on any field to edit it. Fields marked with placeholders show you what information to enter. The more you fill, the more complete your final estimate will be."
+    },
+    "hideShow": {
+      "title": "Show/Hide Sections",
+      "content": "Use the Tools panel to show or hide sections. Hidden sections won't appear in your final estimate. Only fill the sections you need!"
+    },
+    "preview": {
+      "title": "Preview",
+      "content": "In the preview step, you'll see exactly how your estimate will look. Only filled fields will appear in the final document. Make sure everything looks good before downloading!"
+    },
+    "finish": {
+      "title": "You're Ready!",
+      "content": "Start creating your estimate! Remember: the more information you fill, the more professional your estimate will be. Good luck!"
     }
   }
 }

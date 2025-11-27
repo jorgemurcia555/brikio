@@ -9,6 +9,7 @@ import {
   CreditCard,
   ChevronLeft,
   Sparkles,
+  Shield,
 } from 'lucide-react';
 import { useUIStore } from '../../stores/uiStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -27,7 +28,12 @@ export function Sidebar() {
     { name: t('sidebar.billing'), href: '/billing', icon: CreditCard },
   ];
 
+  const adminNavigation = [
+    { name: t('sidebar.adminTemplates', { defaultValue: 'Templates' }), href: '/admin/templates', icon: Shield },
+  ];
+
   const isPremium = user?.subscription?.plan?.name === 'premium';
+  const isAdmin = user?.role === 'admin';
 
   return (
     <motion.aside
@@ -69,6 +75,28 @@ export function Sidebar() {
             {sidebarOpen && <span className="font-medium">{item.name}</span>}
           </NavLink>
         ))}
+        
+        {isAdmin && (
+          <>
+            <div className="my-2 border-t border-secondary-200"></div>
+            {adminNavigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-accent-100 text-accent-700'
+                      : 'text-secondary-600 hover:bg-secondary-50'
+                  }`
+                }
+              >
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                {sidebarOpen && <span className="font-medium">{item.name}</span>}
+              </NavLink>
+            ))}
+          </>
+        )}
       </nav>
 
       {/* Premium Badge */}

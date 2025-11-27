@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TemplateSectionConfig, TemplateSectionId } from '../../types/template.types';
+import { useTranslation } from 'react-i18next';
 
 interface TemplateToolbarProps {
   sections: TemplateSectionConfig[];
@@ -30,24 +31,27 @@ interface TemplateToolbarProps {
   draggedSection: TemplateSectionId | null;
   onThemeChange?: (theme: string) => void;
   onTemplateChange?: (template: string) => void;
+  onSaveTemplate?: () => void;
+  templateData?: any;
 }
 
-type ThemeId = 'company' | 'orange' | 'green' | 'blue' | 'red';
+type ThemeId = 'black' | 'company' | 'orange' | 'green' | 'blue' | 'red';
 type TemplateId = 'classic' | 'minimal' | 'centered-logo' | 'side-band';
 
-const THEMES: { id: ThemeId; label: string; primary: string; secondary: string }[] = [
-  { id: 'company', label: 'Company Colors', primary: '#F15A24', secondary: '#8A3B12' },
-  { id: 'orange', label: 'Orange', primary: '#F15A24', secondary: '#FF8C42' },
-  { id: 'green', label: 'Green', primary: '#22C55E', secondary: '#16A34A' },
-  { id: 'blue', label: 'Blue', primary: '#3B82F6', secondary: '#2563EB' },
-  { id: 'red', label: 'Red', primary: '#EF4444', secondary: '#DC2626' },
+const getThemes = (t: any): { id: ThemeId; label: string; primary: string; secondary: string; text: string; bg: string; border: string }[] => [
+  { id: 'black', label: t('templateEditor.toolbar.themes.black'), primary: '#000000', secondary: '#1F2937', text: '#111827', bg: '#FFFFFF', border: '#E5E7EB' },
+  { id: 'company', label: t('templateEditor.toolbar.themes.company'), primary: '#F15A24', secondary: '#8A3B12', text: '#8A3B12', bg: '#FFF7EA', border: '#F4C197' },
+  { id: 'orange', label: t('templateEditor.toolbar.themes.orange'), primary: '#F15A24', secondary: '#FF8C42', text: '#8A3B12', bg: '#FFF7EA', border: '#F4C197' },
+  { id: 'green', label: t('templateEditor.toolbar.themes.green'), primary: '#22C55E', secondary: '#16A34A', text: '#166534', bg: '#F0FDF4', border: '#86EFAC' },
+  { id: 'blue', label: t('templateEditor.toolbar.themes.blue'), primary: '#3B82F6', secondary: '#2563EB', text: '#1E40AF', bg: '#EFF6FF', border: '#93C5FD' },
+  { id: 'red', label: t('templateEditor.toolbar.themes.red'), primary: '#EF4444', secondary: '#DC2626', text: '#991B1B', bg: '#FEF2F2', border: '#FCA5A5' },
 ];
 
-const TEMPLATES: { id: TemplateId; label: string; description: string }[] = [
-  { id: 'classic', label: 'Classic', description: 'Traditional layout with header and sections' },
-  { id: 'minimal', label: 'Minimal', description: 'Clean and simple design' },
-  { id: 'centered-logo', label: 'Centered Logo', description: 'Logo centered in header' },
-  { id: 'side-band', label: 'Side Band', description: 'Color band on the side' },
+const getTemplates = (t: any): { id: TemplateId; label: string; description: string }[] => [
+  { id: 'classic', label: t('templateEditor.toolbar.templateTypes.classic'), description: t('templateEditor.toolbar.templateTypes.classicDesc') },
+  { id: 'minimal', label: t('templateEditor.toolbar.templateTypes.minimal'), description: t('templateEditor.toolbar.templateTypes.minimalDesc') },
+  { id: 'centered-logo', label: t('templateEditor.toolbar.templateTypes.centeredLogo'), description: t('templateEditor.toolbar.templateTypes.centeredLogoDesc') },
+  { id: 'side-band', label: t('templateEditor.toolbar.templateTypes.sideBand'), description: t('templateEditor.toolbar.templateTypes.sideBandDesc') },
 ];
 
 const SECTION_ICONS: Record<TemplateSectionId, any> = {
@@ -70,12 +74,18 @@ export function TemplateToolbar({
   draggedSection,
   onThemeChange,
   onTemplateChange,
+  onSaveTemplate,
+  templateData,
 }: TemplateToolbarProps) {
+  const { t } = useTranslation();
   const sortedSections = [...sections].sort((a, b) => a.order - b.order);
-  const [selectedTheme, setSelectedTheme] = useState<ThemeId>('orange');
+  const [selectedTheme, setSelectedTheme] = useState<ThemeId>('black');
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('classic');
   const [activeTool, setActiveTool] = useState<'theme' | 'templates' | 'sections' | null>(null);
   const [activeSection, setActiveSection] = useState<TemplateSectionId | null>(null);
+  
+  const THEMES = getThemes(t);
+  const TEMPLATES = getTemplates(t);
 
   const handleThemeSelect = (themeId: ThemeId) => {
     setSelectedTheme(themeId);
@@ -143,12 +153,12 @@ export function TemplateToolbar({
           </button>
           {/* Floating tooltip */}
           <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-[#8A3B12] text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
-            Color / Theme
+            {t('templateEditor.toolbar.colorTheme')}
           </div>
         </div>
 
         {/* Templates Tool */}
-        <div className="relative group">
+        <div className="relative group tour-templates">
           <button
             onClick={() => setActiveTool(activeTool === 'templates' ? null : 'templates')}
             className={`flex flex-col items-center gap-1 p-2.5 rounded-xl transition-all ${
@@ -158,10 +168,10 @@ export function TemplateToolbar({
             }`}
           >
             <Layers className={`w-5 h-5 ${activeTool === 'templates' ? 'text-white' : 'text-[#F15A24]'}`} />
-            <span className="text-[9px] font-medium leading-tight text-center">Templates</span>
+            <span className="text-[9px] font-medium leading-tight text-center">{t('templateEditor.toolbar.templates')}</span>
           </button>
           <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-[#8A3B12] text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
-            Templates
+            {t('templateEditor.toolbar.templates')}
           </div>
         </div>
 
@@ -170,7 +180,7 @@ export function TemplateToolbar({
           const Icon = SECTION_ICONS[section.id] || FileText;
           const isActive = activeSection === section.id;
           return (
-            <div key={section.id} className="relative">
+            <div key={section.id} className={`relative ${section.id === 'header' ? 'tour-sections' : ''}`}>
               <motion.div
                 drag={!section.required ? 'y' : false}
                 dragConstraints={{ top: 0, bottom: 0 }}
@@ -214,12 +224,12 @@ export function TemplateToolbar({
                         e.stopPropagation();
                         onToggleSection(section.id);
                       }}
-                      className={`p-1.5 rounded-lg transition-colors ${
+                      className={`p-1.5 rounded-lg transition-colors tour-hide-show ${
                         section.enabled 
                           ? 'bg-[#F15A24] text-white hover:bg-[#C05A2B]' 
                           : 'bg-[#F4C197] text-[#8A3B12] hover:bg-[#F15A24] hover:text-white'
                       }`}
-                      title={section.enabled ? 'Hide section' : 'Show section'}
+                      title={section.enabled ? t('templateEditor.toolbar.hideSection') : t('templateEditor.toolbar.showSection')}
                     >
                       {section.enabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                     </button>
@@ -227,7 +237,7 @@ export function TemplateToolbar({
                 </div>
                 {section.enabled && section.layout && (
                   <div className="flex items-center gap-2 pt-2 border-t border-[#F4C197]">
-                    <span className="text-xs text-[#6C4A32]">Layout:</span>
+                    <span className="text-xs text-[#6C4A32]">{t('templateEditor.toolbar.layout')}:</span>
                     <div className="flex gap-1">
                       <button
                         onClick={(e) => {
@@ -239,7 +249,7 @@ export function TemplateToolbar({
                             ? 'bg-[#F15A24] text-white' 
                             : 'bg-white text-[#8A3B12] hover:bg-[#FFF7EA] border border-[#F4C197]'
                         }`}
-                        title="One column"
+                        title={t('templateEditor.toolbar.oneColumn')}
                       >
                         <Layout className="w-3.5 h-3.5" />
                       </button>
@@ -253,7 +263,7 @@ export function TemplateToolbar({
                             ? 'bg-[#F15A24] text-white' 
                             : 'bg-white text-[#8A3B12] hover:bg-[#FFF7EA] border border-[#F4C197]'
                         }`}
-                        title="Two columns"
+                        title={t('templateEditor.toolbar.twoColumns')}
                       >
                         <LayoutGrid className="w-3.5 h-3.5" />
                       </button>
@@ -311,7 +321,16 @@ export function TemplateToolbar({
               {/* Templates Panel */}
               {activeTool === 'templates' && (
                 <div>
-                  <h3 className="text-lg font-display text-[#8A3B12] font-bold mb-4">Templates</h3>
+                  <h3 className="text-lg font-display text-[#8A3B12] font-bold mb-4">{t('templateEditor.toolbar.templates')}</h3>
+                  {onSaveTemplate && (
+                    <button
+                      onClick={onSaveTemplate}
+                      className="w-full mb-4 p-3 bg-[#F15A24] text-white rounded-xl hover:bg-[#C2410C] transition-colors font-semibold flex items-center justify-center gap-2"
+                    >
+                      <Wand2 className="w-4 h-4" />
+                      {t('templateEditor.toolbar.saveTemplate')}
+                    </button>
+                  )}
                   <div className="space-y-2">
                     {TEMPLATES.map((template) => (
                       <button

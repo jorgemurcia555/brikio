@@ -168,6 +168,61 @@ export class AuthService {
     });
   }
 
+  async validateGoogleUser(googleUser: any) {
+    const { email, firstName, lastName, avatarUrl, googleId } = googleUser;
+
+    // Check if user exists
+    let user = await this.usersRepository.findOne({
+      where: { email },
+      relations: ['subscription', 'subscription.plan'],
+    });
+
+    if (!user) {
+      // Create new user with Google account
+      user = this.usersRepository.create({
+        email,
+        firstName,
+        lastName,
+        avatarUrl,
+        password: '', // No password for OAuth users
+        onboardingCompleted: false,
+        isActive: true,
+      });
+
+      await this.usersRepository.save(user);
+    } else {
+      // Update existing user with Google info if needed
+      if (!user.avatarUrl && avatarUrl) {
+        user.avatarUrl = avatarUrl;
+        await this.usersRepository.save(user);
+      }
+    }
+
+    // Generate tokens
+    const tokens = await this.generateTokens(user);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return {
+      user: this.sanitizeUser(user),
+      ...tokens,
+    };
+  }
+
+  async getUserProfile(userId: string) {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['subscription', 'subscription.plan'],
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return {
+      user: this.sanitizeUser(user),
+    };
+  }
+
   private sanitizeUser(user: User) {
     const { password, refreshToken, ...sanitized } = user;
     return sanitized;

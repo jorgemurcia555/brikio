@@ -24,10 +24,12 @@ import { TradeSpecialtyId } from '../types/trade.types';
 import { TRADE_SPECIALTIES } from '../constants/trade.constants';
 import { EstimatePreview } from '../components/TemplateEditor/EstimatePreview';
 import { FileText as FileTextIcon } from 'lucide-react';
+import { useAuthStore } from '../../../stores/authStore';
 
 export function GuestProjectPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { isAuthenticated, user } = useAuthStore();
   const [projectName, setProjectName] = useState('');
   const [selectedTrade, setSelectedTrade] = useState<TradeSpecialtyId | null>(null);
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -92,32 +94,55 @@ export function GuestProjectPage() {
               <Logo size="md" variant="orange" showText={false} />
               <div className="hidden sm:block min-w-0">
                 <p className="font-display text-lg sm:text-xl text-[#8A3B12] truncate">{t('brand.name')}</p>
-                <p className="text-xs text-[#C05A2B]">{t('guestProject.header.tryMode')}</p>
+                <p className="text-xs text-[#C05A2B]">
+                  {isAuthenticated ? (user?.companyName || user?.email || '') : t('guestProject.header.tryMode')}
+                </p>
               </div>
               <div className="sm:hidden">
                 <p className="font-display text-sm text-[#8A3B12] truncate">{t('brand.name')}</p>
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
-              <div className="hidden sm:block">
-                <LanguageSwitcher />
-              </div>
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/')}
-                className="hidden sm:flex items-center"
-              >
-                <Home className="w-4 h-4 sm:mr-2" />
-                <span className="hidden md:inline">{t('guestProject.header.backHome')}</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/login')}
-                className="text-xs sm:text-base px-2 sm:px-4"
-              >
-                <span className="hidden sm:inline">{t('guestProject.header.signIn')}</span>
-                <span className="sm:hidden">Sign in</span>
-              </Button>
+              <LanguageSwitcher />
+              {isAuthenticated ? (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => navigate('/dashboard')}
+                    className="hidden sm:flex items-center"
+                  >
+                    <Home className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden md:inline">Dashboard</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/projects')}
+                    className="text-xs sm:text-base px-2 sm:px-4"
+                  >
+                    <span className="hidden sm:inline">My Projects</span>
+                    <span className="sm:hidden">Projects</span>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => navigate('/')}
+                    className="hidden sm:flex items-center"
+                  >
+                    <Home className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden md:inline">{t('guestProject.header.backHome')}</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/login')}
+                    className="text-xs sm:text-base px-2 sm:px-4"
+                  >
+                    <span className="hidden sm:inline">{t('guestProject.header.signIn')}</span>
+                    <span className="sm:hidden">Sign in</span>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -156,7 +181,8 @@ export function GuestProjectPage() {
       <div className="container mx-auto px-3 sm:px-6 py-6 sm:py-12" style={{ maxWidth: '100%' }}>
         {/* Step 1: Project Info */}
         {currentStep === 'project' && (
-          <Card className="p-4 sm:p-8 bg-white border-2 border-[#F4C197] rounded-2xl sm:rounded-3xl">
+          <div className="flex justify-center w-full">
+            <Card className="p-4 sm:p-8 bg-white border-2 border-[#F4C197] rounded-2xl sm:rounded-3xl w-full lg:max-w-[50%]">
             <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
               <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-[#F15A24] flex-shrink-0" />
               <h2 className="text-xl sm:text-3xl font-display text-[#8A3B12]">{t('guestProject.projectInfo.title')}</h2>
@@ -206,6 +232,7 @@ export function GuestProjectPage() {
               </Button>
             </div>
           </Card>
+          </div>
         )}
 
         {/* Step 2: Template Editor */}
@@ -280,6 +307,7 @@ export function GuestProjectPage() {
                 paymentMethod={templateData.paymentMethod}
                 contactInfo={templateData.contactInfo}
                 signature={templateData.signature}
+                theme={templateData.theme || 'black'}
               />
             ) : (
               <Card className="p-8 bg-white border-2 border-[#F4C197] rounded-2xl">

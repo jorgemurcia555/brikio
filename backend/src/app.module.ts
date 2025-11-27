@@ -15,6 +15,7 @@ import { ClientsModule } from './modules/clients/clients.module';
 import { AiModule } from './modules/ai/ai.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { PdfModule } from './modules/pdf/pdf.module';
+import { EstimateTemplatesModule } from './modules/estimate-templates/estimate-templates.module';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { PdfModule } from './modules/pdf/pdf.module';
     AiModule,
     AnalyticsModule,
     PdfModule,
+    EstimateTemplatesModule,
   ],
 })
 export class AppModule {}

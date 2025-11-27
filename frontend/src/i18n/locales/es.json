@@ -317,7 +317,10 @@
     "noAccount": "¿No tienes cuenta?",
     "signUpLink": "Regístrate gratis",
     "success": "¡Bienvenido!",
-    "error": "Error al iniciar sesión"
+    "error": "Error al iniciar sesión",
+    "orContinueWith": "O continúa con",
+    "googleSignIn": "Iniciar sesión con Google",
+    "processing": "Procesando..."
   },
   "register": {
     "title": "Crear Cuenta",
@@ -336,7 +339,8 @@
     },
     "password": {
       "label": "Contraseña",
-      "placeholder": "••••••••"
+      "placeholder": "••••••••",
+      "helper": "Mínimo 8 caracteres"
     },
     "confirmPassword": {
       "label": "Confirmar Contraseña",
@@ -347,11 +351,8 @@
     "signInLink": "Inicia sesión",
     "success": "¡Cuenta creada exitosamente!",
     "error": "Error al crear la cuenta",
-    "password": {
-      "label": "Contraseña",
-      "placeholder": "••••••••",
-      "helper": "Mínimo 8 caracteres"
-    }
+    "orContinueWith": "O continúa con",
+    "googleSignUp": "Registrarse con Google"
   },
   "dashboard": {
     "welcome": "Bienvenido",
@@ -461,6 +462,231 @@
       "title": "Prueba Gratuita Activa",
       "daysLeft": "{{days}} días restantes",
       "upgradeNow": "Actualizar Ahora"
+    }
+  },
+  "templateEditor": {
+    "sections": {
+      "header": "Encabezado",
+      "jobSummary": "Resumen del Trabajo",
+      "projectInfo": "Información del Proyecto",
+      "itemsTable": "Tabla de Partidas",
+      "paymentMethod": "Método de Pago",
+      "contactInfo": "Información de Contacto",
+      "signature": "Firma"
+    },
+    "toolbar": {
+      "theme": "Tema",
+      "templates": "Plantillas",
+      "saveTemplate": "Guardar Plantilla",
+      "colorTheme": "Color / Tema",
+      "useToolsPanel": "Usa el panel de herramientas para ocultar/mostrar o cambiar el diseño",
+      "useToolsPanelColumns": "Usa el panel de herramientas para ocultar/mostrar o cambiar el diseño (1 o 2 columnas)",
+      "themes": {
+        "black": "Negro (Formal)",
+        "company": "Colores de la Empresa",
+        "orange": "Naranja",
+        "green": "Verde",
+        "blue": "Azul",
+        "red": "Rojo"
+      },
+      "templateTypes": {
+        "classic": "Clásico",
+        "classicDesc": "Diseño tradicional con encabezado y secciones",
+        "minimal": "Minimalista",
+        "minimalDesc": "Diseño limpio y simple",
+        "centeredLogo": "Logo Centrado",
+        "centeredLogoDesc": "Logo centrado en el encabezado",
+        "sideBand": "Banda Lateral",
+        "sideBandDesc": "Banda de color en el lateral"
+      },
+      "layout": "Diseño",
+      "oneColumn": "1 Columna",
+      "twoColumns": "2 Columnas",
+      "hideSection": "Ocultar Sección",
+      "showSection": "Mostrar Sección",
+      "requiredSection": "Sección requerida",
+      "dragToReorder": "Arrastra para reordenar secciones",
+      "thisSectionRequired": "Esta sección es requerida",
+      "canEnableDisable": "Puedes habilitar o deshabilitar esta sección"
+    },
+    "header": {
+      "title": "Información del Encabezado",
+      "companyName": "Nombre de la Empresa",
+      "companyNameDesc": "El nombre de tu empresa aparecerá prominentemente en la parte superior",
+      "tagline": "Eslogan",
+      "taglineDesc": "Descripción breve opcional de lo que hace tu empresa",
+      "logo": "Logo",
+      "logoDesc": "Sube el logo de tu empresa. Aparecerá en cada página del PDF",
+      "estimateDetails": "Detalles del Presupuesto",
+      "estimateDetailsDesc": "Número, fecha y duración del trabajo ayudan a organizar tus presupuestos",
+      "companyNamePlaceholder": "Nombre de la Empresa",
+      "taglinePlaceholder": "¿Qué hace tu empresa? (opcional)",
+      "estimateNumberPlaceholder": "0001",
+      "uploadLogo": "Subir Logo",
+      "estimateNumber": "Presupuesto #",
+      "date": "Fecha",
+      "duration": "Duración",
+      "editCompanyInfo": "Edita el nombre de la empresa, eslogan, logo y detalles del presupuesto. Haz clic en los campos para editar"
+    },
+    "jobSummary": {
+      "jobTitlePlaceholder": "Título del Trabajo (ej., Renovación de Cocina)",
+      "jobDescriptionPlaceholder": "Descripción del Trabajo / Eslogan"
+    },
+    "projectInfo": {
+      "title": "Información del Proyecto",
+      "client": "Cliente",
+      "clientPlaceholder": "Nombre del cliente",
+      "clientSearchPlaceholder": "Escribe o busca el nombre del cliente",
+      "searchClients": "Buscar clientes",
+      "searchClientsPlaceholder": "Buscar clientes...",
+      "noClientsFound": "No se encontraron clientes",
+      "noClientsSaved": "Aún no hay clientes guardados",
+      "address": "Dirección",
+      "addressPlaceholder": "123 Calle Principal",
+      "city": "Ciudad",
+      "cityPlaceholder": "Ciudad",
+      "state": "Estado",
+      "statePlaceholder": "Estado",
+      "country": "País",
+      "countryPlaceholder": "País",
+      "date": "Fecha",
+      "duration": "Duración",
+      "durationPlaceholder": "3 meses",
+      "editProjectInfo": "Edita la dirección del proyecto, ubicación, fechas e información del cliente. Haz clic en los campos para editar"
+    },
+    "itemsTable": {
+      "description": "Descripción",
+      "descriptionPlaceholder": "Descripción",
+      "descriptionTooltip": "Ingresa una descripción detallada del artículo, material, mano de obra o servicio. Sé específico con nombres de marca, especificaciones o números de modelo para evitar confusiones",
+      "quantity": "Cantidad",
+      "quantityTooltip": "Ingresa la cantidad necesaria para este artículo. Usa números enteros o decimales según sea necesario (ej., 2, 1.5, 0.75)",
+      "unit": "Unidad",
+      "unitPrice": "Precio Unitario",
+      "unitPriceTooltip": "Ingresa el costo por unidad en dólares. Usa formato decimal (ej., 12.50, 45.00). El total se calculará automáticamente",
+      "total": "Total",
+      "removeItem": "Eliminar artículo",
+      "addLineItem": "Agregar Partida",
+      "estimateTotal": "Total del Presupuesto",
+      "editItems": "Agrega partidas con descripción, cantidad, unidad y precio. Haz clic en los campos para editar"
+    },
+    "paymentMethod": {
+      "bankName": "Nombre del Banco",
+      "bankNamePlaceholder": "Nombre del Banco",
+      "accountNumber": "Número de Cuenta",
+      "accountNumberPlaceholder": "Número de Cuenta / IBAN",
+      "paymentMode": "Modo de Pago",
+      "paymentModePlaceholder": "Transferencia bancaria, Efectivo, Cheque, Tarjeta, En línea, etc.",
+      "bank": "Banco",
+      "account": "Cuenta",
+      "mode": "Modo"
+    },
+    "contactInfo": {
+      "email": "Correo Electrónico",
+      "emailPlaceholder": "correo@ejemplo.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+1 (555) 123-4567",
+      "website": "Sitio Web",
+      "websitePlaceholder": "https://ejemplo.com"
+    },
+    "resources": {
+      "title": "Recursos Rápidos",
+      "tooltip": "Recursos Rápidos - Haz clic para agregar artículos a tu presupuesto",
+      "tooltipMobile": "Recursos Rápidos - Toca artículos para agregar al presupuesto"
+    },
+    "aiChat": {
+      "title": "Asistente IA",
+      "placeholder": "Escribe tu mensaje aquí...",
+      "send": "Enviar"
+    },
+    "saveTemplate": {
+      "title": "Guardar Plantilla",
+      "nameLabel": "Nombre de la Plantilla",
+      "nameRequired": "*",
+      "namePlaceholder": "ej., Plantilla de Presupuesto Estándar",
+      "descriptionLabel": "Descripción (opcional)",
+      "descriptionPlaceholder": "Describe esta plantilla...",
+      "save": "Guardar Plantilla",
+      "saving": "Guardando...",
+      "cancel": "Cancelar",
+      "success": "¡Plantilla guardada exitosamente!",
+      "error": "Error al guardar la plantilla",
+      "nameRequiredError": "Por favor ingresa un nombre para la plantilla"
+    },
+    "preview": {
+      "zoomIn": "Acercar",
+      "zoomOut": "Alejar",
+      "totalEstimate": "Total del Presupuesto"
+    },
+    "mobile": {
+      "tools": "HERRAMIENTAS",
+      "toggleTools": "Mostrar/Ocultar Herramientas",
+      "closeTools": "Cerrar Herramientas",
+      "toggleResources": "Mostrar/Ocultar Recursos",
+      "toggleAIChat": "Mostrar/Ocultar Asistente IA"
+    }
+  },
+  "admin": {
+    "templates": {
+      "title": "Plantillas Guardadas",
+      "subtitle": "Gestiona todas las plantillas de presupuesto guardadas",
+      "noTemplates": "No se encontraron plantillas",
+      "noTemplatesDescription": "Las plantillas guardadas por los usuarios aparecerán aquí",
+      "view": "Ver",
+      "used": "Usado",
+      "times": "veces",
+      "time": "vez",
+      "created": "Creado",
+      "user": "Usuario"
+    }
+  },
+  "tour": {
+    "welcome": {
+      "title": "¡Bienvenido al Editor de Plantillas!",
+      "content": "Hagamos un recorrido rápido para aprender a crear presupuestos profesionales. Haz clic en Siguiente para continuar."
+    },
+    "toolsBar": {
+      "title": "Barra de Herramientas",
+      "content": "Este es tu panel de control principal. Aquí puedes cambiar temas, seleccionar plantillas y gestionar secciones. Haz clic en cualquier icono para abrir su panel de opciones."
+    },
+    "mobileToolsButton": {
+      "title": "Botón de Herramientas",
+      "content": "En móvil, las herramientas están ocultas para ahorrar espacio. Haz clic en este botón para abrir el panel de herramientas donde podrás cambiar temas, seleccionar plantillas y gestionar secciones."
+    },
+    "themes": {
+      "title": "Temas y Colores",
+      "content": "Elige un tema de color para tu presupuesto. El tema afecta la apariencia del documento final. Negro es la opción más formal."
+    },
+    "templates": {
+      "title": "Plantillas",
+      "content": "Selecciona un diseño de plantilla para tu presupuesto. También puedes guardar tu configuración actual como plantilla para uso futuro."
+    },
+    "sections": {
+      "title": "Gestión de Secciones",
+      "content": "Cada sección puede mostrarse u ocultarse, y puedes cambiar su diseño (1 o 2 columnas). Arrastra las secciones para reordenarlas. Las secciones requeridas no se pueden ocultar."
+    },
+    "resourcesBar": {
+      "title": "Recursos Rápidos",
+      "content": "Haz clic en cualquier recurso para agregarlo rápidamente a tu presupuesto. Los recursos incluyen materiales e ítems comunes. También puedes agregar tus propios recursos personalizados."
+    },
+    "aiChat": {
+      "title": "Asistente IA (Premium)",
+      "content": "Obtén ayuda de nuestro asistente IA para optimizar tu presupuesto, sugerir materiales o revisar tu trabajo. Esta función está disponible para usuarios Premium."
+    },
+    "editableFields": {
+      "title": "Campos Editables",
+      "content": "Haz clic en cualquier campo para editarlo. Los campos marcados con placeholders te muestran qué información ingresar. Cuanto más llenes, más completo será tu presupuesto final."
+    },
+    "hideShow": {
+      "title": "Mostrar/Ocultar Secciones",
+      "content": "Usa el panel de Herramientas para mostrar u ocultar secciones. Las secciones ocultas no aparecerán en tu presupuesto final. ¡Solo llena las secciones que necesites!"
+    },
+    "preview": {
+      "title": "Vista Previa",
+      "content": "En el paso de vista previa, verás exactamente cómo se verá tu presupuesto. Solo los campos llenos aparecerán en el documento final. ¡Asegúrate de que todo se vea bien antes de descargar!"
+    },
+    "finish": {
+      "title": "¡Estás Listo!",
+      "content": "¡Comienza a crear tu presupuesto! Recuerda: cuanto más información llenes, más profesional será tu presupuesto. ¡Buena suerte!"
     }
   }
 }

@@ -9,6 +9,7 @@ import { AuthLayout } from './components/layout/AuthLayout';
 // Auth Pages
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { RegisterPage } from './features/auth/pages/RegisterPage';
+import { AuthCallbackPage } from './features/auth/pages/AuthCallbackPage';
 
 // App Pages
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
@@ -18,6 +19,7 @@ import { NewEstimatePage } from './features/estimates/pages/NewEstimatePage';
 import { MaterialsPage } from './features/materials/pages/MaterialsPage';
 import { ClientsPage } from './features/clients/pages/ClientsPage';
 import { BillingPage } from './features/billing/pages/BillingPage';
+import { AdminTemplatesPage } from './features/admin/pages/AdminTemplatesPage';
 
 // Landing
 import { LandingPage } from './features/landing/pages/LandingPage';
@@ -26,7 +28,8 @@ import { LandingPage } from './features/landing/pages/LandingPage';
 import { GuestProjectPage } from './features/projects/pages/GuestProjectPage';
 
 function App() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const isAdmin = user?.role === 'admin';
 
   return (
     <>
@@ -40,6 +43,7 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
         </Route>
 
         {/* Protected Routes */}
@@ -55,6 +59,9 @@ function App() {
           <Route path="/materials" element={<MaterialsPage />} />
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/billing" element={<BillingPage />} />
+          {isAdmin && (
+            <Route path="/admin/templates" element={<AdminTemplatesPage />} />
+          )}
         </Route>
 
         {/* Catch all */}
