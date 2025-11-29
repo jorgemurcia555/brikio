@@ -232,9 +232,6 @@ export function EstimateDetailPage() {
             taxTotal={parseFloat(estimateData.taxTotal || 0)}
             total={parseFloat(estimateData.total || 0)}
             taxEnabled={templateData.taxEnabled || false}
-            providedSubtotal={parseFloat(estimateData.subtotal || 0)}
-            providedTaxTotal={parseFloat(estimateData.taxTotal || 0)}
-            providedTotal={parseFloat(estimateData.total || 0)}
           />
         </div>
       </div>

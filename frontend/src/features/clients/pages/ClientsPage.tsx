@@ -129,11 +129,11 @@ export function ClientsPage() {
       return;
     }
     // Map companyName to company for backend
+    const { companyName, ...restFormData } = formData;
     const dataToSend = {
-      ...formData,
-      company: formData.companyName || undefined,
+      ...restFormData,
+      company: companyName || undefined,
     };
-    delete dataToSend.companyName;
     saveMutation.mutate(dataToSend);
   };
 
