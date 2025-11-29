@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -15,6 +16,8 @@ import { StripeService } from './stripe.service';
 
 @Injectable()
 export class BillingService {
+  private readonly logger = new Logger(BillingService.name);
+
   constructor(
     @InjectRepository(Plan)
     private plansRepository: Repository<Plan>,
@@ -43,7 +46,7 @@ export class BillingService {
     return subscription;
   }
 
-  async createFreeSubscription(userId: string): Promise<Subscription> {
+  async createFreeSubscription(userId: string, paymentMethodId?: string): Promise<Subscription> {
     const freePlan = await this.plansRepository.findOne({
       where: { name: PlanName.TRIAL },
     });
@@ -60,6 +63,66 @@ export class BillingService {
       throw new NotFoundException('User not found');
     }
 
+    // Create or get Stripe customer
+    let stripeCustomerId = user.stripeCustomerId;
+    if (!stripeCustomerId) {
+      const customer = await this.stripeService.createCustomer(
+        user.email,
+        user.companyName || `${user.firstName} ${user.lastName}`.trim(),
+      );
+      stripeCustomerId = customer.id;
+      user.stripeCustomerId = stripeCustomerId;
+      await this.usersRepository.save(user);
+    }
+
+    // If payment method is provided, attach it and create subscription with trial
+    if (paymentMethodId) {
+      try {
+        // Attach payment method to customer
+        await this.stripeService.attachPaymentMethodToCustomer(
+          paymentMethodId,
+          stripeCustomerId,
+        );
+
+        // Set as default payment method
+        await this.stripeService.setDefaultPaymentMethod(
+          stripeCustomerId,
+          paymentMethodId,
+        );
+
+        // Get Premium plan for after trial
+        const proPlan = await this.plansRepository.findOne({
+          where: { name: PlanName.PREMIUM },
+        });
+
+        if (proPlan && proPlan.stripePriceId) {
+          // Create subscription with 7-day trial
+          const stripeSubscription = await this.stripeService.createSubscriptionWithTrial(
+            stripeCustomerId,
+            proPlan.stripePriceId,
+            paymentMethodId,
+            7,
+          );
+
+          const subscription = this.subscriptionsRepository.create({
+            user,
+            plan: freePlan,
+            status: SubscriptionStatus.TRIALING,
+            usageCount: 0,
+            lastUsageReset: new Date(),
+            stripeSubscriptionId: stripeSubscription.id,
+            trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+          });
+
+          return this.subscriptionsRepository.save(subscription);
+        }
+      } catch (error) {
+        this.logger.error('Error creating subscription with payment method:', error);
+        // Fall through to create free subscription without payment method
+      }
+    }
+
+    // Create free subscription without payment method (legacy behavior)
     const subscription = this.subscriptionsRepository.create({
       user,
       plan: freePlan,
@@ -69,6 +132,141 @@ export class BillingService {
     });
 
     return this.subscriptionsRepository.save(subscription);
+  }
+
+  async createSetupIntent(userId: string) {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Create or get Stripe customer
+    let stripeCustomerId = user.stripeCustomerId;
+    if (!stripeCustomerId) {
+      const customer = await this.stripeService.createCustomer(
+        user.email,
+        user.companyName || `${user.firstName} ${user.lastName}`.trim(),
+      );
+      stripeCustomerId = customer.id;
+      user.stripeCustomerId = stripeCustomerId;
+      await this.usersRepository.save(user);
+    }
+
+    // Create SetupIntent
+    const setupIntent = await this.stripeService.createSetupIntent(stripeCustomerId);
+
+    return {
+      clientSecret: setupIntent.client_secret,
+    };
+  }
+
+  async savePaymentMethodAndCreateTrial(userId: string, paymentMethodId: string) {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.stripeCustomerId) {
+      throw new BadRequestException('Stripe customer not found. Please create setup intent first.');
+    }
+
+    // Attach payment method to customer
+    await this.stripeService.attachPaymentMethodToCustomer(
+      paymentMethodId,
+      user.stripeCustomerId,
+    );
+
+    // Set as default payment method
+    await this.stripeService.setDefaultPaymentMethod(
+      user.stripeCustomerId,
+      paymentMethodId,
+    );
+
+    // Get Premium plan for after trial
+    const proPlan = await this.plansRepository.findOne({
+      where: { name: PlanName.PREMIUM },
+    });
+
+    // Determine which plan to use (Premium if available and configured, otherwise Basic)
+    let selectedPlan: Plan | null = proPlan;
+    let planName = 'Premium';
+
+    // If Premium doesn't exist or doesn't have stripePriceId, try Basic
+    if (!proPlan || !proPlan.stripePriceId) {
+      this.logger.warn('Premium plan not found or not configured, trying Basic plan instead');
+      const basicPlan = await this.plansRepository.findOne({
+        where: { name: PlanName.BASIC },
+      });
+      
+      if (!basicPlan || !basicPlan.stripePriceId) {
+        throw new NotFoundException(
+          'No payment plan configured. Please set one of the following in your environment variables:\n' +
+          '- STRIPE_PREMIUM_PLAN_PRICE_ID or STRIPE_PRO_PLAN_PRICE_ID (for Premium)\n' +
+          '- STRIPE_BASIC_PLAN_PRICE_ID or STRIPE_FREE_PLAN_PRICE_ID (for Basic)'
+        );
+      }
+      
+      selectedPlan = basicPlan;
+      planName = 'Basic';
+    }
+
+    // At this point, selectedPlan should never be null due to the check above
+    if (!selectedPlan || !selectedPlan.stripePriceId) {
+      throw new NotFoundException(
+        'No payment plan configured. Please set one of the following in your environment variables:\n' +
+        '- STRIPE_PREMIUM_PLAN_PRICE_ID or STRIPE_PRO_PLAN_PRICE_ID (for Premium)\n' +
+        '- STRIPE_BASIC_PLAN_PRICE_ID or STRIPE_FREE_PLAN_PRICE_ID (for Basic)'
+      );
+    }
+
+    // Create subscription with 7-day trial using the selected plan
+    const stripeSubscription = await this.stripeService.createSubscriptionWithTrial(
+      user.stripeCustomerId,
+      selectedPlan.stripePriceId,
+      paymentMethodId,
+      7,
+    );
+    
+    this.logger.log(`Created trial subscription with ${planName} plan for user ${userId}`);
+
+    // Get or create subscription record
+    const existingSubscription = await this.subscriptionsRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['plan'],
+    });
+
+    const freePlan = await this.plansRepository.findOne({
+      where: { name: PlanName.TRIAL },
+    });
+
+    if (!freePlan) {
+      throw new NotFoundException('Trial plan not found');
+    }
+
+    if (existingSubscription) {
+      existingSubscription.status = SubscriptionStatus.TRIALING;
+      existingSubscription.stripeSubscriptionId = stripeSubscription.id;
+      existingSubscription.trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      return this.subscriptionsRepository.save(existingSubscription);
+    } else {
+      const subscription = this.subscriptionsRepository.create({
+        user,
+        plan: freePlan,
+        status: SubscriptionStatus.TRIALING,
+        usageCount: 0,
+        lastUsageReset: new Date(),
+        stripeSubscriptionId: stripeSubscription.id,
+        trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+
+      return this.subscriptionsRepository.save(subscription);
+    }
   }
 
   async createCheckoutSession(userId: string, planId: string) {

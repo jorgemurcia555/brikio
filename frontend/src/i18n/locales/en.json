@@ -7,7 +7,8 @@
     "delete": "Delete",
     "close": "Close",
     "confirm": "Confirm",
-    "back": "Back"
+    "back": "Back",
+    "retry": "Retry"
   },
   "nav": {
     "tagline": "Smart Estimates",
@@ -300,7 +301,18 @@
       },
       "startTrial": "Start 7-Day Free Trial",
       "continueEditing": "Continue Editing"
-    }
+    },
+    "download": {
+      "creating": "Creating project and estimate...",
+      "success": "PDF downloaded successfully! Project saved.",
+      "error": "Error downloading PDF",
+      "noUnits": "Unable to find units. Please try again.",
+      "docxNotSupported": "DOCX download is not yet supported. Please use PDF.",
+      "viewProject": "View Project"
+    },
+    "finishAndDownload": "Finish and Download",
+    "dataRestored": "Your project data has been restored. Continuing with download...",
+    "restoreError": "Error restoring project data. Please try again."
   },
   "login": {
     "title": "Sign In",
@@ -351,8 +363,18 @@
     "signInLink": "Sign in",
     "success": "Account created successfully!",
     "error": "Error creating account",
+    "userExists": "An account with this email already exists. Please sign in instead.",
     "orContinueWith": "Or continue with",
-    "googleSignUp": "Sign up with Google"
+    "googleSignUp": "Sign up with Google",
+    "payment": {
+      "title": "Add Payment Method",
+      "subtitle": "Start your 7-day free trial. Your card will be charged automatically after the trial period.",
+      "submit": "Start Free Trial",
+      "success": "Payment method added successfully! Your 7-day free trial has started.",
+      "error": "Error adding payment method",
+      "errorDescription": "Unable to load payment form. Please try again.",
+      "loading": "Loading payment form..."
+    }
   },
   "dashboard": {
     "welcome": "Welcome back",
@@ -380,9 +402,8 @@
   },
   "sidebar": {
     "dashboard": "Dashboard",
-    "projects": "Projects",
     "estimates": "Estimates",
-    "materials": "Materials",
+    "resources": "Resources",
     "clients": "Clients",
     "billing": "Billing",
     "settings": "Settings",
@@ -392,10 +413,10 @@
       "description": "AI & advanced features included"
     }
   },
-  "projects": {
-    "title": "Projects",
-    "subtitle": "Manage all your construction projects",
-    "newProject": "New Project",
+  "estimates": {
+    "title": "Estimates",
+    "subtitle": "Manage all your construction estimates",
+    "newEstimate": "New Estimate",
     "noDescription": "No description",
     "areas": "areas",
     "loading": "Loading projects...",
@@ -403,18 +424,58 @@
       "title": "No projects yet",
       "description": "Create your first project to get started",
       "action": "Create Project"
+    },
+    "estimates": {
+      "title": "Estimates",
+      "estimate": "Estimate",
+      "noEstimates": "No estimates yet",
+      "noEstimatesDesc": "Create your first estimate to get started",
+      "createFirst": "Create First Estimate",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "total": "Total",
+      "created": "Created",
+      "downloadSuccess": "PDF downloaded successfully",
+      "downloadError": "Error downloading PDF",
+      "docxNotSupported": "DOCX download is not yet supported. Please use PDF."
+    },
+    "areas": {
+      "title": "Project Areas",
+      "noAreas": "No areas defined yet"
     }
   },
-  "materials": {
-    "title": "Materials",
-    "subtitle": "Materials catalog for your estimates",
-    "newMaterial": "New Material",
-    "search": "Search materials...",
+  "resources": {
+    "title": "Resources",
+    "subtitle": "Manage resources to use in your estimates",
+    "newResource": "New Resource",
+    "editResource": "Edit Resource",
+    "search": "Search resources...",
     "category": "Category",
     "unit": "Unit",
     "price": "Price",
     "stock": "Stock",
-    "loading": "Loading materials..."
+    "loading": "Loading resources...",
+    "created": "Resource created successfully",
+    "updated": "Resource updated successfully",
+    "saveError": "Error saving resource",
+    "requiredFields": "Please fill in all required fields",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Resource name",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description",
+      "category": "Category",
+      "unit": "Unit",
+      "basePrice": "Base Price",
+      "taxRate": "Tax Rate (%)",
+      "performanceFactor": "Performance Factor",
+      "sku": "SKU",
+      "skuPlaceholder": "Optional SKU code",
+      "supplier": "Supplier",
+      "supplierPlaceholder": "Optional supplier name",
+      "supplierUrl": "Supplier URL",
+      "supplierUrlPlaceholder": "Optional supplier website"
+    }
   },
   "clients": {
     "title": "Clients",
@@ -433,6 +494,7 @@
     "saveError": "Error saving client",
     "deleteError": "Error deleting client",
     "confirmDelete": "Are you sure you want to delete this client?",
+    "requiredFields": "Name and phone are required",
     "form": {
       "name": "Contact Name",
       "namePlaceholder": "John Doe",
@@ -507,7 +569,15 @@
       "requiredSection": "Required section",
       "dragToReorder": "Drag and drop to reorder sections",
       "thisSectionRequired": "This section is required",
-      "canEnableDisable": "You can enable or disable this section"
+      "canEnableDisable": "You can enable or disable this section",
+      "profitMargin": "Profit Margin",
+      "profitMarginPercent": "Profit Margin",
+      "profitMarginDesc": "Set the profit margin percentage to be applied to the subtotal. This will be shown in the estimate totals.",
+      "tax": "Tax",
+      "taxPercent": "Tax Rate",
+      "taxDesc": "Set the tax percentage to be applied to the estimate. Tax will be shown if enabled or if resources have tax rates.",
+      "enableTax": "Enable Tax",
+      "enableTaxDesc": "Enable tax calculation in the estimate. Tax will be shown if enabled or if resources have tax rates."
     },
     "header": {
       "title": "Header Information",
@@ -615,7 +685,9 @@
     "preview": {
       "zoomIn": "Zoom In",
       "zoomOut": "Zoom Out",
-      "totalEstimate": "Total Estimate"
+      "totalEstimate": "Total Estimate",
+      "subtotal": "Subtotal",
+      "tax": "Tax"
     },
     "mobile": {
       "tools": "TOOLS",

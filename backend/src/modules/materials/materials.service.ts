@@ -23,6 +23,7 @@ export class MaterialsService {
       .createQueryBuilder('material')
       .leftJoinAndSelect('material.category', 'category')
       .leftJoinAndSelect('material.unit', 'unit')
+      .leftJoinAndSelect('material.user', 'user')
       .where('material.isActive = :isActive', { isActive: true })
       .andWhere('(material.user IS NULL OR material.user = :userId)', {
         userId,
@@ -52,12 +53,36 @@ export class MaterialsService {
     createMaterialDto: CreateMaterialDto,
     userId?: string,
   ): Promise<Material> {
-    const material = this.materialsRepository.create({
-      ...createMaterialDto,
+    const materialData: any = {
+      name: createMaterialDto.name,
+      description: createMaterialDto.description,
+      sku: createMaterialDto.sku,
+      basePrice: createMaterialDto.basePrice,
+      taxRate: createMaterialDto.taxRate,
+      performanceFactor: createMaterialDto.performanceFactor,
+      supplier: createMaterialDto.supplier,
+      supplierUrl: createMaterialDto.supplierUrl,
       user: userId ? ({ id: userId } as any) : undefined,
-    });
+    };
 
-    return this.materialsRepository.save(material);
+    // Only add category and unit if provided
+    if (createMaterialDto.categoryId) {
+      materialData.category = { id: createMaterialDto.categoryId } as any;
+    }
+    if (createMaterialDto.unitId) {
+      materialData.unit = { id: createMaterialDto.unitId } as any;
+    }
+
+    const material = this.materialsRepository.create(materialData);
+
+    const savedMaterial = await this.materialsRepository.save(material);
+    
+    // Reload with relations to ensure all data is present
+    // save() returns Material | Material[], but we're passing a single entity so it returns Material
+    const materialId = Array.isArray(savedMaterial) 
+      ? (savedMaterial as Material[])[0].id 
+      : (savedMaterial as Material).id;
+    return this.findOne(materialId);
   }
 
   async update(

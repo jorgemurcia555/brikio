@@ -43,7 +43,7 @@ export class EstimatesService {
   async findOne(id: string, userId: string): Promise<Estimate> {
     const estimate = await this.estimatesRepository.findOne({
       where: { id, project: { user: { id: userId } } },
-      relations: ['project', 'items', 'items.unit', 'items.area'],
+      relations: ['project', 'items', 'items.unit', 'items.area', 'project.user'],
     });
 
     if (!estimate) {
@@ -103,6 +103,9 @@ export class EstimatesService {
       version,
       ...createEstimateDto,
     });
+
+    // Calculate totals before saving
+    this.calculateTotals(estimate);
 
     const savedEstimate = await this.estimatesRepository.save(estimate);
 

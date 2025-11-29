@@ -15,10 +15,11 @@ export interface Client {
 
 export interface CreateClientData {
   name: string;
+  phone: string;
   email?: string;
-  phone?: string;
   address?: string;
-  companyName?: string;
+  company?: string;
+  companyName?: string; // For backward compatibility
   notes?: string;
 }
 

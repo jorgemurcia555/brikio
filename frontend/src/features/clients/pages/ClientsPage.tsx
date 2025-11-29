@@ -91,7 +91,7 @@ export function ClientsPage() {
         email: client.email || '',
         phone: client.phone || '',
         address: client.address || '',
-        companyName: client.companyName || '',
+        companyName: (client as any).company || client.companyName || '',
         notes: client.notes || '',
       });
     } else {
@@ -123,7 +123,18 @@ export function ClientsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    saveMutation.mutate(formData);
+    // Only name and phone are required
+    if (!formData.name.trim() || !formData.phone.trim()) {
+      toast.error(t('clients.requiredFields'));
+      return;
+    }
+    // Map companyName to company for backend
+    const dataToSend = {
+      ...formData,
+      company: formData.companyName || undefined,
+    };
+    delete dataToSend.companyName;
+    saveMutation.mutate(dataToSend);
   };
 
   const handleDelete = (id: string) => {
@@ -285,6 +296,14 @@ export function ClientsPage() {
           />
 
           <Input
+            label={t('clients.form.phone')}
+            placeholder={t('clients.form.phonePlaceholder')}
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            required
+          />
+
+          <Input
             label={t('clients.form.companyName')}
             placeholder={t('clients.form.companyNamePlaceholder')}
             value={formData.companyName}
@@ -299,13 +318,6 @@ export function ClientsPage() {
             placeholder={t('clients.form.emailPlaceholder')}
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          />
-
-          <Input
-            label={t('clients.form.phone')}
-            placeholder={t('clients.form.phonePlaceholder')}
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
           />
 
           <Input

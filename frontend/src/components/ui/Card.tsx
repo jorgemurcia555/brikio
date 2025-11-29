@@ -38,15 +38,19 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     const Component = hover ? motion.div : 'div';
     const motionProps = hover
       ? {
-          whileHover: { y: -4, shadow: 'lg' },
+          whileHover: { y: -4 },
           transition: { duration: 0.2 },
         }
       : {};
 
+    const finalClassName = hover && variant === 'default'
+      ? clsx(baseStyles, 'shadow-sm hover:shadow-lg', paddings[padding], className)
+      : clsx(baseStyles, variants[variant], paddings[padding], className);
+
     return (
       <Component
         ref={ref}
-        className={clsx(baseStyles, variants[variant], paddings[padding], className)}
+        className={finalClassName}
         {...motionProps}
         {...(props as any)}
       >

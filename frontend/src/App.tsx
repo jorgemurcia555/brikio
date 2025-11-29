@@ -16,6 +16,7 @@ import { DashboardPage } from './features/dashboard/pages/DashboardPage';
 import { ProjectsPage } from './features/projects/pages/ProjectsPage';
 import { ProjectDetailPage } from './features/projects/pages/ProjectDetailPage';
 import { NewEstimatePage } from './features/estimates/pages/NewEstimatePage';
+import { EstimateDetailPage } from './features/estimates/pages/EstimateDetailPage';
 import { MaterialsPage } from './features/materials/pages/MaterialsPage';
 import { ClientsPage } from './features/clients/pages/ClientsPage';
 import { BillingPage } from './features/billing/pages/BillingPage';
@@ -53,10 +54,10 @@ function App() {
           }
         >
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/projects/:id" element={<ProjectDetailPage />} />
+          <Route path="/estimates" element={<ProjectsPage />} />
+          <Route path="/estimates/:id" element={<EstimateDetailPage />} />
           <Route path="/estimates/new/:projectId" element={<NewEstimatePage />} />
-          <Route path="/materials" element={<MaterialsPage />} />
+          <Route path="/resources" element={<MaterialsPage />} />
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/billing" element={<BillingPage />} />
           {isAdmin && (

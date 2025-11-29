@@ -1,24 +1,83 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { Mail, Lock, Building2 } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import axios from 'axios';
+import { Mail, Lock, Building2, CreditCard, ArrowLeft } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
+import { CardForm } from '../../../components/payment/CardForm';
 import { authService } from '../../../services/authService';
 import { useAuthStore } from '../../../stores/authStore';
 import api from '../../../services/api';
 
+const getStripeKey = () => {
+  const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+  if (!key) {
+    console.warn('Stripe publishable key not found. Please set VITE_STRIPE_PUBLISHABLE_KEY in your .env file');
+  }
+  return key || '';
+};
+
+const stripePromise = loadStripe(getStripeKey());
+
 export function RegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const { setAuth } = useAuthStore();
+  const [step, setStep] = useState<'register' | 'payment'>('register');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     companyName: '',
+  });
+  const [userTokens, setUserTokens] = useState<{
+    accessToken: string;
+    refreshToken: string;
+  } | null>(null);
+
+  // Fetch setup intent when on payment step
+  const { data: setupIntentData, isLoading: isLoadingSetupIntent, error: setupIntentError } = useQuery({
+    queryKey: ['setup-intent', userTokens?.accessToken],
+    queryFn: async () => {
+      if (!userTokens?.accessToken) {
+        throw new Error('No access token available');
+      }
+      try {
+        // api.post already returns response.data due to axios interceptor
+        // But TransformInterceptor wraps it in { success: true, data: { clientSecret: '...' } }
+        const response = await api.post('/billing/setup-intent', {}, {
+          headers: {
+            Authorization: `Bearer ${userTokens.accessToken}`,
+          },
+        });
+        console.log('Setup intent response:', response);
+        // Response structure from TransformInterceptor: { success: true, data: { clientSecret: '...' }, timestamp: '...' }
+        // api.post already returns response.data, so response is the transformed data
+        const clientSecret = (response as any)?.data?.clientSecret || (response as any)?.clientSecret;
+        if (!clientSecret) {
+          console.error('No clientSecret in response:', response);
+          throw new Error('Invalid response from server: missing clientSecret');
+        }
+        return { clientSecret };
+      } catch (error: any) {
+        console.error('Setup intent error:', error);
+        if (error?.response?.status === 404) {
+          throw new Error('Payment endpoint not found. Please ensure the backend server is running and has been restarted.');
+        }
+        if (error?.response?.status === 401) {
+          throw new Error('Authentication failed. Please try logging in again.');
+        }
+        throw error;
+      }
+    },
+    enabled: step === 'payment' && !!userTokens?.accessToken,
+    retry: false,
   });
 
   const registerMutation = useMutation({
@@ -26,21 +85,92 @@ export function RegisterPage() {
     onSuccess: (data: any) => {
       const { user, accessToken, refreshToken } = data.data;
       setAuth(user, accessToken, refreshToken);
+      setUserTokens({ accessToken, refreshToken });
       toast.success(t('register.success'));
-      navigate('/dashboard');
+      setStep('payment'); // Move to payment step
     },
     onError: (error: any) => {
-      const errorMessage = 
-        error?.response?.data?.message || 
-        error?.message || 
-        t('register.error');
-      toast.error(typeof errorMessage === 'string' ? errorMessage : t('register.error'));
+      let errorMessage = t('register.error');
+      
+      if (error?.response?.status === 409) {
+        errorMessage = t('register.userExists', { 
+          defaultValue: 'An account with this email already exists. Please sign in instead.' 
+        });
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
+    },
+  });
+
+  const savePaymentMethodMutation = useMutation({
+    mutationFn: async (paymentMethodId: string) => {
+      if (!userTokens?.accessToken) {
+        throw new Error('No access token available');
+      }
+      // Temporarily set auth in store so interceptor can use it
+      const { setAuth: setAuthStore } = useAuthStore.getState();
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser) {
+        setAuthStore(currentUser, userTokens.accessToken, userTokens.refreshToken);
+      }
+      
+      try {
+        // Use api instance which will use the interceptor
+        const response = await api.post('/billing/save-payment-method', { paymentMethodId });
+        return response;
+      } catch (error: any) {
+        // Log the full error for debugging
+        console.error('Save payment method error:', error);
+        console.error('Error response:', error?.response);
+        console.error('Error status:', error?.response?.status);
+        console.error('Error data:', error?.response?.data);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success(t('register.payment.success'));
+      
+      // Check if user was registering to download a guest project
+      const fromGuest = searchParams.get('from') === 'guest';
+      const guestProjectData = localStorage.getItem('guestProjectData');
+      
+      if (fromGuest && guestProjectData) {
+        navigate('/projects/new?restore=true');
+      } else {
+        navigate('/dashboard');
+      }
+    },
+    onError: (error: any) => {
+      console.error('Payment method save error:', error);
+      console.error('Error response:', error?.response);
+      console.error('Error status:', error?.response?.status);
+      console.error('Error data:', error?.response?.data);
+      
+      let errorMessage = t('register.payment.error');
+      
+      if (error?.response?.status === 404) {
+        errorMessage = 'Payment endpoint not found. Please ensure the backend server is running and has been restarted.';
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     registerMutation.mutate(formData);
+  };
+
+  const handlePaymentSuccess = (paymentMethodId: string) => {
+    savePaymentMethodMutation.mutate(paymentMethodId);
   };
 
   const handleGoogleLogin = () => {
@@ -51,6 +181,99 @@ export function RegisterPage() {
     const authPath = baseUrl.endsWith('/api/v1') ? '/auth/google' : '/api/v1/auth/google';
     window.location.href = `${baseUrl}${authPath}`;
   };
+
+  if (step === 'payment') {
+    return (
+      <Card className="w-full max-w-md">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => setStep('register')}
+          className="mb-4"
+          icon={<ArrowLeft className="w-4 h-4" />}
+        >
+          {t('common.back')}
+        </Button>
+
+        <h2 className="text-3xl font-bold text-secondary-900 mb-2">
+          {t('register.payment.title')}
+        </h2>
+        <p className="text-secondary-600 mb-6">
+          {t('register.payment.subtitle')}
+        </p>
+
+        {!getStripeKey() ? (
+          <div className="text-center py-8">
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
+              <p className="font-semibold mb-2">Stripe not configured</p>
+              <p className="text-sm">
+                Please set VITE_STRIPE_PUBLISHABLE_KEY in your .env file
+              </p>
+            </div>
+          </div>
+        ) : isLoadingSetupIntent ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+            <p className="mt-4 text-secondary-600">{t('register.payment.loading')}</p>
+          </div>
+        ) : setupIntentError ? (
+          <div className="text-center py-8">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+              <p className="font-semibold mb-2">{t('register.payment.error')}</p>
+              <p className="text-sm">
+                {setupIntentError instanceof Error 
+                  ? setupIntentError.message 
+                  : t('register.payment.errorDescription', { 
+                      defaultValue: 'Unable to load payment form. Please try again.' 
+                    })
+                }
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => window.location.reload()}
+              >
+                {t('common.retry', { defaultValue: 'Retry' })}
+              </Button>
+            </div>
+          </div>
+        ) : setupIntentData?.clientSecret ? (
+          <Elements
+            stripe={stripePromise}
+            options={{
+              clientSecret: setupIntentData.clientSecret,
+              appearance: {
+                theme: 'stripe',
+              },
+            }}
+          >
+            <CardForm
+              onSuccess={handlePaymentSuccess}
+              onCancel={() => setStep('register')}
+              loading={savePaymentMethodMutation.isPending}
+            />
+          </Elements>
+        ) : (
+          <div className="text-center py-8">
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
+              <p className="font-semibold mb-2">{t('register.payment.error')}</p>
+              <p className="text-sm">
+                {t('register.payment.errorDescription', { 
+                  defaultValue: 'Unable to load payment form. Please try again.' 
+                })}
+              </p>
+              {setupIntentData && (
+                <p className="text-xs mt-2 text-gray-600">
+                  Debug: Response received but missing clientSecret. Data: {JSON.stringify(setupIntentData)}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md">

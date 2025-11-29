@@ -50,6 +50,24 @@ export class BillingController {
     return this.billingService.cancelSubscription(userId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('setup-intent')
+  async createSetupIntent(@CurrentUser('id') userId: string) {
+    return this.billingService.createSetupIntent(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('save-payment-method')
+  async savePaymentMethod(
+    @CurrentUser('id') userId: string,
+    @Body('paymentMethodId') paymentMethodId: string,
+  ) {
+    if (!paymentMethodId) {
+      throw new BadRequestException('Payment method ID is required');
+    }
+    return this.billingService.savePaymentMethodAndCreateTrial(userId, paymentMethodId);
+  }
+
   @Public()
   @Post('webhook')
   async handleWebhook(

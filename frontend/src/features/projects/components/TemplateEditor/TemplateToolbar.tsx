@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { TemplateSectionConfig, TemplateSectionId } from '../../types/template.types';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../../../../stores/authStore';
 
 interface TemplateToolbarProps {
   sections: TemplateSectionConfig[];
@@ -33,6 +34,10 @@ interface TemplateToolbarProps {
   onTemplateChange?: (template: string) => void;
   onSaveTemplate?: () => void;
   templateData?: any;
+  profitMarginPercent?: number;
+  onProfitMarginChange?: (value: number) => void;
+  taxEnabled?: boolean;
+  onTaxEnabledChange?: (value: boolean) => void;
 }
 
 type ThemeId = 'black' | 'company' | 'orange' | 'green' | 'blue' | 'red';
@@ -76,12 +81,17 @@ export function TemplateToolbar({
   onTemplateChange,
   onSaveTemplate,
   templateData,
+  profitMarginPercent = 15,
+  onProfitMarginChange,
+  taxEnabled = false,
+  onTaxEnabledChange,
 }: TemplateToolbarProps) {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuthStore();
   const sortedSections = [...sections].sort((a, b) => a.order - b.order);
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>('black');
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('classic');
-  const [activeTool, setActiveTool] = useState<'theme' | 'templates' | 'sections' | null>(null);
+  const [activeTool, setActiveTool] = useState<'theme' | 'templates' | 'profitMargin' | 'sections' | null>(null);
   const [activeSection, setActiveSection] = useState<TemplateSectionId | null>(null);
   
   const THEMES = getThemes(t);
@@ -172,6 +182,24 @@ export function TemplateToolbar({
           </button>
           <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-[#8A3B12] text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
             {t('templateEditor.toolbar.templates')}
+          </div>
+        </div>
+
+        {/* Profit Margin Tool */}
+        <div className="relative group">
+          <button
+            onClick={() => setActiveTool(activeTool === 'profitMargin' ? null : 'profitMargin')}
+            className={`flex flex-col items-center gap-1 p-2.5 rounded-xl transition-all ${
+              activeTool === 'profitMargin' 
+                ? 'bg-[#F15A24] text-white' 
+                : 'text-[#8A3B12] hover:bg-[#FFF7EA]'
+            }`}
+          >
+            <Calculator className={`w-5 h-5 ${activeTool === 'profitMargin' ? 'text-white' : 'text-[#F15A24]'}`} />
+            <span className="text-[9px] font-medium leading-tight text-center">Tax</span>
+          </button>
+          <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-[#8A3B12] text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
+            {t('templateEditor.toolbar.profitMargin')}
           </div>
         </div>
 
@@ -281,9 +309,9 @@ export function TemplateToolbar({
         })}
       </div>
 
-      {/* Expandable Panel for Theme and Templates */}
+      {/* Expandable Panel for Theme, Templates, and Profit Margin */}
       <AnimatePresence>
-        {activeTool && (activeTool === 'theme' || activeTool === 'templates') && (
+        {activeTool && (activeTool === 'theme' || activeTool === 'templates' || activeTool === 'profitMargin') && (
           <motion.div
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 280, opacity: 1 }}
@@ -314,6 +342,50 @@ export function TemplateToolbar({
                         <span className="text-sm font-semibold">{theme.label}</span>
                       </button>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tax Panel */}
+              {activeTool === 'profitMargin' && (
+                <div>
+                  <h3 className="text-lg font-display text-[#8A3B12] font-bold mb-4">{t('templateEditor.toolbar.tax')}</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[#8A3B12] mb-2">
+                        {t('templateEditor.toolbar.taxPercent')} (%)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        value={profitMarginPercent}
+                        onChange={(e) => onProfitMarginChange?.(parseFloat(e.target.value) || 0)}
+                        className="w-full px-4 py-2 border-2 border-[#F4C197] rounded-lg focus:border-[#F15A24] focus:outline-none text-[#8A3B12]"
+                      />
+                      <p className="text-xs text-[#6C4A32] mt-2">
+                        {t('templateEditor.toolbar.taxDesc')}
+                      </p>
+                    </div>
+                    {isAuthenticated && (
+                      <div className="mt-4 pt-4 border-t border-[#F4C197]">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={taxEnabled}
+                            onChange={(e) => onTaxEnabledChange?.(e.target.checked)}
+                            className="w-4 h-4 text-[#F15A24] border-2 border-[#F4C197] rounded focus:ring-[#F15A24]"
+                          />
+                          <span className="text-sm font-medium text-[#8A3B12]">
+                            {t('templateEditor.toolbar.enableTax')}
+                          </span>
+                        </label>
+                        <p className="text-xs text-[#6C4A32] mt-1 ml-6">
+                          {t('templateEditor.toolbar.enableTaxDesc')}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

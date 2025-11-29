@@ -22,8 +22,8 @@ export function Sidebar() {
 
   const navigation = [
     { name: t('sidebar.dashboard'), href: '/dashboard', icon: LayoutDashboard },
-    { name: t('sidebar.projects'), href: '/projects', icon: FolderKanban },
-    { name: t('sidebar.materials'), href: '/materials', icon: Package },
+    { name: t('sidebar.estimates'), href: '/estimates', icon: FolderKanban },
+    { name: t('sidebar.resources'), href: '/resources', icon: Package },
     { name: t('sidebar.clients'), href: '/clients', icon: Users },
     { name: t('sidebar.billing'), href: '/billing', icon: CreditCard },
   ];

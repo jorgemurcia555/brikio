@@ -59,6 +59,9 @@ export class Subscription {
   @Column({ default: false })
   cancelAtPeriodEnd: boolean;
 
+  @Column({ type: 'timestamp', nullable: true })
+  trialEndsAt: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

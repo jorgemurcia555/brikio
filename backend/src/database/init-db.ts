@@ -66,7 +66,8 @@ export async function initializeDatabase(configService: ConfigService): Promise<
           prioritySupport: false,
         },
         isActive: true,
-        stripePriceId: configService.get('STRIPE_BASIC_PLAN_PRICE_ID'),
+        // Support both naming conventions
+        stripePriceId: configService.get('STRIPE_BASIC_PLAN_PRICE_ID') || configService.get('STRIPE_FREE_PLAN_PRICE_ID'),
       });
 
       const premiumPlan = plansRepository.create({
@@ -83,7 +84,8 @@ export async function initializeDatabase(configService: ConfigService): Promise<
           prioritySupport: true,
         },
         isActive: true,
-        stripePriceId: configService.get('STRIPE_PREMIUM_PLAN_PRICE_ID'),
+        // Support both naming conventions
+        stripePriceId: configService.get('STRIPE_PREMIUM_PLAN_PRICE_ID') || configService.get('STRIPE_PRO_PLAN_PRICE_ID'),
       });
 
       await plansRepository.save([trialPlan, basicPlan, premiumPlan]);

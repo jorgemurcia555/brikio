@@ -17,7 +17,7 @@ export function JobSummarySection({ jobSummary, onChange, projectName, readOnly 
   const [isEditingJobTitle, setIsEditingJobTitle] = useState(false);
 
   if (readOnly) {
-    const hasContent = (projectName || jobSummary.jobTitle) || jobSummary.jobDescription;
+    const hasContent = projectName || jobSummary.jobTitle || jobSummary.jobDescription;
     
     if (!hasContent) {
       return null;
@@ -25,6 +25,7 @@ export function JobSummarySection({ jobSummary, onChange, projectName, readOnly 
     
     return (
       <div>
+        {/* Always prioritize projectName from first step */}
         {(projectName || jobSummary.jobTitle) && (
           <h2 className="text-xl font-bold text-[#8A3B12] mb-3">
             {projectName || jobSummary.jobTitle}

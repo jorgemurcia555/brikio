@@ -11,9 +11,16 @@ import { initializeDatabase } from './database/init-db';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    bodyParser: false, // Disable default body parser to configure custom one
   });
 
   const configService = app.get(ConfigService);
+  
+  // Increase body size limit to handle large template data (50MB)
+  // This must be done before any routes are registered
+  const express = require('express');
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
   // Initialize database (create tables if they don't exist)
   // This is safe to run on every startup as it only creates missing tables

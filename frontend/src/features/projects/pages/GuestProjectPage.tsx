@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../../i18n/config';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   ArrowRight,
   Calculator,
@@ -25,10 +28,16 @@ import { TRADE_SPECIALTIES } from '../constants/trade.constants';
 import { EstimatePreview } from '../components/TemplateEditor/EstimatePreview';
 import { FileText as FileTextIcon } from 'lucide-react';
 import { useAuthStore } from '../../../stores/authStore';
+import { projectsService } from '../../../services/projectsService';
+import { estimatesService } from '../../../services/estimatesService';
+import api from '../../../services/api';
+import axios from 'axios';
 
 export function GuestProjectPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { isAuthenticated, user } = useAuthStore();
   const [projectName, setProjectName] = useState('');
   const [selectedTrade, setSelectedTrade] = useState<TradeSpecialtyId | null>(null);
@@ -37,6 +46,98 @@ export function GuestProjectPage() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [downloadFormat, setDownloadFormat] = useState<'pdf' | 'docx' | null>(null);
   const [currentStep, setCurrentStep] = useState<'project' | 'items' | 'preview'>('project');
+  const [dataRestored, setDataRestored] = useState(false);
+  const [pendingDownload, setPendingDownload] = useState<'pdf' | 'docx' | null>(null);
+
+  // Restore saved project data when user becomes authenticated
+  useEffect(() => {
+    const isNewProject = searchParams.get('new') === 'true';
+    const shouldRestore = searchParams.get('restore') === 'true';
+    
+    // If this is a new project, clear any saved data
+    if (isNewProject) {
+      localStorage.removeItem('guestProjectData');
+      setProjectName('');
+      setLineItems([]);
+      setTemplateData(null);
+      setSelectedTrade(null);
+      setCurrentStep('project');
+      setDataRestored(true);
+      return;
+    }
+    
+    if (isAuthenticated && !dataRestored) {
+      // Only restore if explicitly requested via restore=true parameter
+      if (shouldRestore) {
+        const savedData = localStorage.getItem('guestProjectData');
+        
+        if (savedData) {
+          try {
+            const projectData = JSON.parse(savedData);
+            
+            // Restore project data
+            if (projectData.projectName) setProjectName(projectData.projectName);
+            if (projectData.lineItems) setLineItems(projectData.lineItems);
+            if (projectData.templateData) setTemplateData(projectData.templateData);
+            if (projectData.selectedTrade) setSelectedTrade(projectData.selectedTrade);
+            if (projectData.downloadFormat) {
+              setDownloadFormat(projectData.downloadFormat);
+              setPendingDownload(projectData.downloadFormat);
+            }
+            
+            // Go to preview step if we have line items
+            if (projectData.lineItems && projectData.lineItems.length > 0) {
+              setCurrentStep('preview');
+            } else if (projectData.projectName) {
+              setCurrentStep('items');
+            }
+            
+            setDataRestored(true);
+            toast.success(t('guestProject.dataRestored'));
+          } catch (error) {
+            console.error('Error restoring project data:', error);
+            toast.error(t('guestProject.restoreError'));
+            setDataRestored(true); // Mark as restored to avoid infinite loop
+          }
+        } else {
+          setDataRestored(true); // Mark as restored even if no data to restore
+        }
+      } else {
+        // If authenticated but no restore parameter, start fresh
+        setDataRestored(true);
+      }
+    } else if (!isAuthenticated) {
+      // Reset restored flag when user logs out
+      setDataRestored(false);
+      setPendingDownload(null);
+    }
+  }, [isAuthenticated, dataRestored, searchParams, t]);
+
+  // Fetch units for mapping unit strings to unitIds
+  const { data: unitsResponse } = useQuery({
+    queryKey: ['units'],
+    queryFn: () => api.get('/materials/units'),
+    enabled: isAuthenticated,
+  });
+  
+  // Extract units from response (API interceptor returns response.data)
+  const units = unitsResponse?.data || unitsResponse;
+
+  // Trigger download after data is restored and user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && dataRestored && pendingDownload && lineItems.length > 0 && units) {
+      // Small delay to ensure all state is updated
+      const timer = setTimeout(() => {
+        // Execute download directly
+        handleDownload(pendingDownload).catch((error) => {
+          console.error('Error during auto-download:', error);
+        });
+        setPendingDownload(null); // Clear pending download
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, dataRestored, pendingDownload, lineItems.length, units]);
 
   const addLineItem = () => {
     const newItem: LineItem = {
@@ -63,19 +164,222 @@ export function GuestProjectPage() {
     return lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
   };
 
-  const handleDownload = (format: 'pdf' | 'docx') => {
-    // Save project data to localStorage before redirecting to register
-    const projectData = {
-      projectName,
-      lineItems,
-      templateData,
-      total: calculateTotal(),
-      format,
-      createdAt: new Date().toISOString(),
-    };
-    localStorage.setItem('guestProjectData', JSON.stringify(projectData));
-    setDownloadFormat(format);
-    setShowDownloadModal(true);
+  // Create project mutation
+  const createProjectMutation = useMutation({
+    mutationFn: projectsService.create,
+  });
+
+  // Create estimate mutation
+  const createEstimateMutation = useMutation({
+    mutationFn: estimatesService.create,
+  });
+
+  // Download PDF mutation
+  const downloadPdfMutation = useMutation({
+    mutationFn: async ({ estimateId, projectId }: { estimateId: string; projectId: string }) => {
+      // Use axios directly to handle blob response correctly
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+      const { accessToken } = useAuthStore.getState();
+      // Get current language from i18n
+      const currentLanguage = i18n.language || 'en';
+      const response = await axios.get(`${API_URL}/pdf/estimate/${estimateId}?lang=${currentLanguage}`, {
+        responseType: 'blob',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      return { blob: response.data as Blob, estimateId, projectId };
+    },
+    onSuccess: ({ blob, estimateId }: { blob: Blob; estimateId: string; projectId: string }) => {
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectName || 'estimate'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      // Invalidate queries to refresh projects list and materials
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['materials', 'custom'] });
+      queryClient.invalidateQueries({ queryKey: ['estimates'] });
+      
+      toast.success(t('guestProject.download.success'), {
+        action: {
+          label: t('guestProject.download.viewProject'),
+          onClick: () => navigate(`/estimates/${estimateId}`),
+        },
+        duration: 5000,
+      });
+      
+      // Navigate to estimates list after a short delay if authenticated
+      if (isAuthenticated) {
+        setTimeout(() => {
+          navigate('/estimates');
+        }, 2000);
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || t('guestProject.download.error'));
+    },
+  });
+
+  // Download DOCX mutation
+  const downloadDocxMutation = useMutation({
+    mutationFn: async ({ estimateId, projectId }: { estimateId: string; projectId: string }) => {
+      // Use axios directly to handle blob response correctly
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+      const { accessToken } = useAuthStore.getState();
+      const response = await axios.get(`${API_URL}/pdf/estimate/${estimateId}/docx`, {
+        responseType: 'blob',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      return { blob: response.data as Blob, estimateId, projectId };
+    },
+    onSuccess: ({ blob, estimateId }: { blob: Blob; estimateId: string; projectId: string }) => {
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectName || 'estimate'}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      // Invalidate queries to refresh projects list and materials
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['materials', 'custom'] });
+      queryClient.invalidateQueries({ queryKey: ['estimates'] });
+      
+      toast.success(t('guestProject.download.success'), {
+        action: {
+          label: t('guestProject.download.viewProject'),
+          onClick: () => navigate(`/estimates/${estimateId}`),
+        },
+        duration: 5000,
+      });
+      
+      // Navigate to estimates list after a short delay if authenticated
+      if (isAuthenticated) {
+        setTimeout(() => {
+          navigate('/estimates');
+        }, 2000);
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || t('guestProject.download.error'));
+    },
+  });
+
+  const handleDownload = async (format: 'pdf' | 'docx') => {
+    // If user is not authenticated, show registration modal
+    if (!isAuthenticated) {
+      const projectData = {
+        projectName,
+        lineItems,
+        templateData,
+        selectedTrade,
+        total: calculateTotal(),
+        format,
+        createdAt: new Date().toISOString(),
+      };
+      localStorage.setItem('guestProjectData', JSON.stringify(projectData));
+      setDownloadFormat(format);
+      setShowDownloadModal(true);
+      return;
+    }
+
+    // If user is authenticated, create project and estimate, then download
+    try {
+      toast.loading(t('guestProject.download.creating'));
+
+      // Find a default unit (m²) or use the first available
+      const defaultUnit = units?.find((u: any) => 
+        u.symbol?.toLowerCase() === 'm²' || 
+        u.name?.toLowerCase().includes('square meter') ||
+        u.symbol?.toLowerCase() === 'm2'
+      ) || units?.[0];
+
+      if (!defaultUnit) {
+        toast.error(t('guestProject.download.noUnits'));
+        return;
+      }
+
+      // Create project
+      const projectResponse = await createProjectMutation.mutateAsync({
+        name: projectName,
+        projectType: selectedTrade || undefined,
+        metadata: {
+          templateData,
+          trade: selectedTrade,
+        },
+      });
+      
+      // Extract project from response (API interceptor returns response.data)
+      const project = projectResponse?.data || projectResponse;
+
+      // Map line items to estimate items format
+      const estimateItems = lineItems.map((item) => {
+        // Try to find matching unit by symbol or name
+        const unit = units?.find((u: any) => 
+          u.symbol?.toLowerCase() === item.unit?.toLowerCase() ||
+          u.name?.toLowerCase() === item.unit?.toLowerCase()
+        ) || defaultUnit;
+
+        const subtotal = item.quantity * item.unitPrice;
+        // Calculate tax if taxEnabled is true
+        const taxRatePercent = templateData?.taxRatePercent || templateData?.profitMarginPercent || 0;
+        const tax = (templateData?.taxEnabled && taxRatePercent > 0) 
+          ? (subtotal * taxRatePercent) / 100 
+          : 0;
+
+        return {
+          description: item.description,
+          quantity: item.quantity,
+          unitId: unit.id,
+          unitCost: item.unitPrice,
+          subtotal,
+          tax,
+        };
+      });
+
+      // Create estimate
+      const estimateResponse = await createEstimateMutation.mutateAsync({
+        projectId: project.id,
+        profitMarginPercent: templateData?.profitMarginPercent || 15,
+        laborCost: 0,
+        items: estimateItems,
+      });
+      
+      // Extract estimate from response (API interceptor returns response.data)
+      const estimate = estimateResponse?.data || estimateResponse;
+
+      // Clear saved data from localStorage after successful creation
+      localStorage.removeItem('guestProjectData');
+
+      // Download PDF or DOCX
+      if (format === 'pdf') {
+        await downloadPdfMutation.mutateAsync({ 
+          estimateId: estimate.id, 
+          projectId: project.id 
+        });
+      } else if (format === 'docx') {
+        await downloadDocxMutation.mutateAsync({ 
+          estimateId: estimate.id, 
+          projectId: project.id 
+        });
+      }
+
+      toast.dismiss();
+    } catch (error: any) {
+      toast.dismiss();
+      toast.error(error?.response?.data?.message || t('guestProject.download.error'));
+    }
   };
 
   const handleRegister = () => {
@@ -285,31 +589,47 @@ export function GuestProjectPage() {
                 >
                   Download PDF
                 </Button>
-                <Button 
+                {/* DOCX button disabled for now */}
+                {/* <Button 
                   variant="outline" 
                   onClick={() => handleDownload('docx')} 
                   icon={<FileTextIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
                   className="w-full sm:w-auto"
+                  disabled
                 >
                   Download DOCX
-                </Button>
+                </Button> */}
               </div>
             </div>
             
-            {templateData ? (
-              <EstimatePreview
-                projectName={projectName}
-                lineItems={lineItems}
-                sections={templateData.sections}
-                header={templateData.header}
-                jobSummary={templateData.jobSummary}
-                projectInfo={templateData.projectInfo}
-                paymentMethod={templateData.paymentMethod}
-                contactInfo={templateData.contactInfo}
-                signature={templateData.signature}
-                theme={templateData.theme || 'black'}
-              />
-            ) : (
+            {templateData ? (() => {
+              // Calculate totals for preview
+              const subtotal = lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+              const taxRatePercent = templateData.taxRatePercent || templateData.profitMarginPercent || 0;
+              const taxTotal = (templateData.taxEnabled && taxRatePercent > 0) 
+                ? (subtotal * taxRatePercent) / 100 
+                : 0;
+              const total = subtotal + taxTotal;
+              
+              return (
+                <EstimatePreview
+                  projectName={projectName}
+                  lineItems={lineItems}
+                  sections={templateData.sections}
+                  header={templateData.header}
+                  jobSummary={templateData.jobSummary}
+                  projectInfo={templateData.projectInfo}
+                  paymentMethod={templateData.paymentMethod}
+                  contactInfo={templateData.contactInfo}
+                  signature={templateData.signature}
+                  theme={templateData.theme || 'black'}
+                  taxEnabled={templateData.taxEnabled || false}
+                  subtotal={subtotal}
+                  taxTotal={taxTotal}
+                  total={total}
+                />
+              );
+            })() : (
               <Card className="p-8 bg-white border-2 border-[#F4C197] rounded-2xl">
                 <p className="text-center text-[#6C4A32]">
                   Loading preview...
@@ -325,6 +645,23 @@ export function GuestProjectPage() {
               >
                 Back to Edit
               </Button>
+              {isAuthenticated && (
+                <Button
+                  variant="primary"
+                  onClick={async () => {
+                    try {
+                      await handleDownload('pdf');
+                      // Navigation is handled in downloadPdfMutation.onSuccess
+                    } catch (error) {
+                      console.error('Error downloading PDF:', error);
+                    }
+                  }}
+                  icon={<Download className="w-4 h-4 sm:w-5 sm:h-5" />}
+                  className="w-full sm:w-auto order-1 sm:order-2"
+                >
+                  {t('guestProject.finishAndDownload', { defaultValue: 'Finish and Download' })}
+                </Button>
+              )}
             </div>
           </div>
         )}

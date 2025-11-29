@@ -17,8 +17,8 @@ export function DashboardPage() {
   });
 
   const { data: recentProjects } = useQuery({
-    queryKey: ['projects', 'recent'],
-    queryFn: () => api.get('/projects'),
+    queryKey: ['estimates', 'recent'],
+    queryFn: () => api.get('/projects'), // Backend still uses /projects endpoint
   });
 
   const stats = [
@@ -60,9 +60,9 @@ export function DashboardPage() {
         <Button
           variant="primary"
           size="lg"
-          onClick={() => navigate('/projects')}
+          onClick={() => navigate('/estimates')}
         >
-          {t('dashboard.quickActions.newProject')}
+          {t('dashboard.quickActions.newEstimate', { defaultValue: 'New Estimate' })}
         </Button>
       </div>
 
@@ -193,7 +193,7 @@ export function DashboardPage() {
               <div
                 key={project.id}
                 className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg hover:bg-secondary-100 transition-colors cursor-pointer"
-                onClick={() => navigate(`/projects/${project.id}`)}
+                onClick={() => navigate(`/estimates/${project.id}`)}
               >
                 <div>
                   <h3 className="font-semibold text-secondary-900">{project.name}</h3>
@@ -216,7 +216,7 @@ export function DashboardPage() {
               <Button
                 variant="outline"
                 className="mt-4"
-                onClick={() => navigate('/projects')}
+                onClick={() => navigate('/estimates')}
               >
                 {t('dashboard.recentProjects.createFirst')}
               </Button>

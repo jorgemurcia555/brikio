@@ -26,7 +26,15 @@ export function AuthCallbackPage() {
           if (data.data?.user) {
             setAuth(data.data.user, token, refreshToken);
             toast.success(t('login.success'));
-            navigate('/dashboard');
+            
+            // Check if user was registering to download a guest project
+            const guestProjectData = localStorage.getItem('guestProjectData');
+            if (guestProjectData) {
+              // Redirect back to guest project page with saved data
+              navigate('/projects/new?restore=true');
+            } else {
+              navigate('/dashboard');
+            }
           } else {
             throw new Error('Failed to fetch user data');
           }

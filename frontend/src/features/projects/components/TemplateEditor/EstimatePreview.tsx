@@ -20,6 +20,10 @@ interface EstimatePreviewProps {
   contactInfo: ContactInfo;
   signature: Signature;
   theme?: string;
+  subtotal?: number;
+  taxTotal?: number;
+  total?: number;
+  taxEnabled?: boolean;
 }
 
 export function EstimatePreview({
@@ -33,6 +37,10 @@ export function EstimatePreview({
   contactInfo,
   signature,
   theme = 'black',
+  subtotal: providedSubtotal,
+  taxTotal: providedTaxTotal,
+  total: providedTotal,
+  taxEnabled = false,
 }: EstimatePreviewProps) {
   const { t } = useTranslation();
   const sortedSections = [...sections]
@@ -51,9 +59,45 @@ export function EstimatePreview({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const calculateTotal = () => {
-    return lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+  const calculateSubtotal = () => {
+    // Calculate from lineItems first
+    const calculatedFromItems = lineItems.reduce((sum, item) => {
+      const quantity = parseFloat(String(item.quantity || 0));
+      const unitPrice = parseFloat(String(item.unitPrice || 0));
+      return sum + (quantity * unitPrice);
+    }, 0);
+    
+    // Use provided value only if it's greater than 0, otherwise calculate from items
+    if (providedSubtotal !== undefined && providedSubtotal > 0) {
+      return providedSubtotal;
+    }
+    return calculatedFromItems;
   };
+
+  const calculateTax = () => {
+    // Use provided value if available (even if 0, as long as it's defined)
+    if (providedTaxTotal !== undefined) {
+      return providedTaxTotal;
+    }
+    
+    // If taxEnabled is true but no provided tax, return 0 (will be calculated on backend)
+    return 0;
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    const tax = calculateTax();
+    const calculatedTotal = subtotal + tax;
+    
+    // Use provided value only if it's greater than calculated total, otherwise use calculated
+    if (providedTotal !== undefined && providedTotal > 0) {
+      return providedTotal;
+    }
+    return calculatedTotal;
+  };
+
+  const taxValue = calculateTax();
+  const shouldShowTax = taxEnabled && (taxValue > 0 || providedTaxTotal !== undefined);
 
   // Theme colors mapping
   const getThemeColors = () => {
@@ -190,10 +234,22 @@ export function EstimatePreview({
 
                   <div className="mt-8 pt-6" style={{ borderTop: `2px solid ${themeColors.primary}` }}>
                     <div className="flex justify-end">
-                      <div className="text-right">
-                        <div className="text-lg font-semibold mb-2" style={{ color: themeColors.primary }}>{t('templateEditor.preview.totalEstimate')}</div>
-                        <div className="text-2xl font-bold" style={{ color: themeColors.primary }}>
-                          ${calculateTotal().toFixed(2)}
+                      <div className="text-right space-y-2">
+                        <div className="flex justify-between items-center gap-8 mb-2">
+                          <span className="text-sm" style={{ color: themeColors.text }}>{t('templateEditor.preview.subtotal', { defaultValue: 'Subtotal' })}:</span>
+                          <span className="text-sm font-semibold" style={{ color: themeColors.text }}>${calculateSubtotal().toFixed(2)}</span>
+                        </div>
+                        {shouldShowTax && (
+                          <div className="flex justify-between items-center gap-8 mb-2">
+                            <span className="text-sm" style={{ color: themeColors.text }}>{t('templateEditor.preview.tax', { defaultValue: 'Tax' })}:</span>
+                            <span className="text-sm font-semibold" style={{ color: themeColors.text }}>${taxValue.toFixed(2)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center gap-8 pt-2" style={{ borderTop: `2px solid ${themeColors.primary}` }}>
+                          <span className="text-lg font-semibold" style={{ color: themeColors.primary }}>{t('templateEditor.preview.totalEstimate')}</span>
+                          <span className="text-2xl font-bold" style={{ color: themeColors.primary }}>
+                            ${calculateTotal().toFixed(2)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -223,8 +279,22 @@ export function EstimatePreview({
                       </div>
                     </div>
                   ))}
-                  <div className="mt-4 pt-4 border-t-2 border-[#8A3B12]">
+                  <div className="mt-4 pt-4 border-t-2 border-[#8A3B12] space-y-2">
                     <div className="flex justify-between items-center">
+                      <span className="text-sm text-[#6C4A32]">{t('templateEditor.preview.subtotal', { defaultValue: 'Subtotal' })}:</span>
+                      <span className="text-sm font-semibold text-[#8A3B12]">
+                        ${calculateSubtotal().toFixed(2)}
+                      </span>
+                    </div>
+                    {shouldShowTax && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-[#6C4A32]">{t('templateEditor.preview.tax', { defaultValue: 'Tax' })}:</span>
+                        <span className="text-sm font-semibold text-[#8A3B12]">
+                          ${taxValue.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-2 border-t-2 border-[#8A3B12]">
                       <span className="text-base font-semibold text-[#8A3B12]">{t('templateEditor.preview.totalEstimate')}</span>
                       <span className="text-xl font-bold text-[#F15A24]">
                         ${calculateTotal().toFixed(2)}

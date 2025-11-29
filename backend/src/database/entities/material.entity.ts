@@ -28,10 +28,11 @@ export class Material {
 
   @ManyToOne(() => MaterialCategory, (category) => category.materials, {
     eager: true,
+    nullable: true,
   })
   category: MaterialCategory;
 
-  @ManyToOne(() => Unit, (unit) => unit.materials, { eager: true })
+  @ManyToOne(() => Unit, (unit) => unit.materials, { eager: true, nullable: true })
   unit: Unit;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })

@@ -70,5 +70,52 @@ export class StripeService {
       webhookSecret,
     );
   }
+
+  async createSetupIntent(customerId: string) {
+    return this.stripe.setupIntents.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      usage: 'off_session', // For future payments after trial
+    });
+  }
+
+  async createCustomer(email: string, name?: string) {
+    return this.stripe.customers.create({
+      email,
+      name,
+    });
+  }
+
+  async attachPaymentMethodToCustomer(
+    paymentMethodId: string,
+    customerId: string,
+  ) {
+    return this.stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId,
+    });
+  }
+
+  async setDefaultPaymentMethod(customerId: string, paymentMethodId: string) {
+    return this.stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
+    });
+  }
+
+  async createSubscriptionWithTrial(
+    customerId: string,
+    priceId: string,
+    paymentMethodId: string,
+    trialPeriodDays: number = 7,
+  ) {
+    return this.stripe.subscriptions.create({
+      customer: customerId,
+      items: [{ price: priceId }],
+      default_payment_method: paymentMethodId,
+      trial_period_days: trialPeriodDays,
+      expand: ['latest_invoice.payment_intent'],
+    });
+  }
 }
 

@@ -1,84 +1,150 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Plus, FolderKanban } from 'lucide-react';
+import { Plus, FileText, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
-import { projectsService } from '../../../services/projectsService';
+import { estimatesService } from '../../../services/estimatesService';
 
 export function ProjectsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { data: projects, isLoading } = useQuery({
-    queryKey: ['projects'],
-    queryFn: projectsService.getAll,
+  const { data: estimates, isLoading } = useQuery({
+    queryKey: ['estimates'],
+    queryFn: estimatesService.getAll,
   });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-secondary-900">{t('projects.title')}</h1>
+          <h1 className="text-3xl font-bold text-secondary-900">{t('estimates.title')}</h1>
           <p className="text-secondary-600 mt-1">
-            {t('projects.subtitle')}
+            {t('estimates.subtitle')}
           </p>
         </div>
         <Button
           variant="primary"
           size="lg"
           icon={<Plus className="w-5 h-5" />}
-          onClick={() => navigate('/projects/new')}
+          onClick={() => navigate('/projects/new?new=true')}
         >
-          {t('projects.newProject')}
+          {t('estimates.newEstimate')}
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="h-48 animate-pulse bg-secondary-100" />
+            <Card key={i} className="h-32 animate-pulse bg-secondary-100" />
           ))}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects?.data?.map((project: any) => (
+      ) : estimates?.data && estimates.data.length > 0 ? (
+        <div className="space-y-4">
+          {estimates.data.map((estimate: any) => (
             <Card
-              key={project.id}
+              key={estimate.id}
               hover
               className="cursor-pointer"
-              onClick={() => navigate(`/projects/${project.id}`)}
+              onClick={() => navigate(`/estimates/${estimate.id}`)}
             >
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-primary-100 rounded-lg">
-                  <FolderKanban className="w-6 h-6 text-primary-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg text-secondary-900">
-                    {project.name}
-                  </h3>
-                  <p className="text-sm text-secondary-600 mt-1">
-                    {project.description || t('projects.noDescription')}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-xs text-secondary-500">
-                      {project.areas?.length || 0} {t('projects.areas')}
-                    </span>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        project.status === 'completed'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-primary-100 text-primary-700'
-                      }`}
-                    >
-                      {project.status}
-                    </span>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="p-3 bg-primary-100 rounded-lg">
+                    <FileText className="w-5 h-5 text-primary-600" />
                   </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-semibold text-secondary-900">
+                        {t('estimates.estimates.estimate')} #{estimate.version || 1}
+                      </h3>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          estimate.status === 'approved'
+                            ? 'bg-green-100 text-green-700'
+                            : estimate.status === 'rejected'
+                            ? 'bg-red-100 text-red-700'
+                            : estimate.status === 'sent'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {estimate.status || 'draft'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-secondary-600">{t('estimates.estimates.subtotal')}</p>
+                        <p className="font-semibold text-secondary-900">
+                          ${parseFloat(estimate.subtotal || 0).toFixed(2)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-secondary-600">{t('estimates.estimates.tax')}</p>
+                        <p className="font-semibold text-secondary-900">
+                          ${parseFloat(estimate.taxTotal || 0).toFixed(2)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-secondary-600">{t('estimates.estimates.total')}</p>
+                        <p className="font-semibold text-primary-600 text-lg">
+                          ${parseFloat(estimate.total || 0).toFixed(2)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-secondary-600">{t('estimates.estimates.created')}</p>
+                        <p className="font-semibold text-secondary-900">
+                          {new Date(estimate.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2 ml-4" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={<Download className="w-4 h-4" />}
+                    onClick={() => {
+                      // Download will be handled in detail page
+                      navigate(`/estimates/${estimate.id}`);
+                    }}
+                  >
+                    PDF
+                  </Button>
+                  {/* DOCX button disabled for now */}
+                  {/* <Button
+                    variant="outline"
+                    size="sm"
+                    icon={<FileText className="w-4 h-4" />}
+                    onClick={() => {
+                      // Download will be handled in detail page
+                      navigate(`/estimates/${estimate.id}`);
+                    }}
+                    disabled
+                  >
+                    DOCX
+                  </Button> */}
                 </div>
               </div>
             </Card>
           ))}
         </div>
+      ) : (
+        <Card className="p-12 text-center">
+          <FileText className="w-16 h-16 text-secondary-300 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-secondary-900 mb-2">
+            {t('estimates.estimates.noEstimates')}
+          </h3>
+          <p className="text-secondary-600 mb-6">
+            {t('estimates.estimates.noEstimatesDesc', { defaultValue: 'Create your first estimate to get started' })}
+          </p>
+          <Button onClick={() => navigate('/projects/new?new=true')}>
+            <Plus className="w-5 h-5 mr-2" />
+            {t('estimates.estimates.createFirst')}
+          </Button>
+        </Card>
       )}
     </div>
   );

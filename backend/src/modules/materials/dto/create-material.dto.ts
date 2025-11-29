@@ -19,11 +19,13 @@ export class CreateMaterialDto {
   @IsString()
   sku?: string;
 
+  @IsOptional()
   @IsUUID()
-  categoryId: string;
+  categoryId?: string;
 
+  @IsOptional()
   @IsUUID()
-  unitId: string;
+  unitId?: string;
 
   @IsNumber()
   @Min(0)

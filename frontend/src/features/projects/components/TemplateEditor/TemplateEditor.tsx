@@ -45,6 +45,9 @@ export interface TemplateData {
   contactInfo: ContactInfo;
   signature: Signature;
   theme?: string;
+  profitMarginPercent?: number;
+  taxEnabled?: boolean;
+  taxRatePercent?: number;
 }
 
 interface TemplateEditorProps {
@@ -164,8 +167,10 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
       paymentMethod,
       contactInfo,
       signature,
-      theme: selectedTheme,
-    };
+            theme: selectedTheme,
+            profitMarginPercent,
+            taxEnabled,
+          };
     
     saveTemplateMutation.mutate({
       name: templateName,
@@ -218,6 +223,9 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
     signatureDate: new Date().toISOString().split('T')[0],
   });
 
+  const [profitMarginPercent, setProfitMarginPercent] = useState<number>(15);
+  const [taxEnabled, setTaxEnabled] = useState<boolean>(false);
+
   const handleToggleSection = (sectionId: TemplateSectionId) => {
     setSections(sections.map(s => 
       s.id === sectionId ? { ...s, enabled: !s.enabled } : s
@@ -236,7 +244,7 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
 
   // Expose template data to parent
   useEffect(() => {
-    if (onTemplateChange) {
+      if (onTemplateChange) {
       onTemplateChange({
         sections,
         header,
@@ -246,9 +254,12 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
         contactInfo,
         signature,
         theme: selectedTheme,
+        profitMarginPercent,
+        taxEnabled,
+        taxRatePercent: profitMarginPercent, // Use profitMarginPercent as taxRatePercent when tax is enabled
       } as TemplateData & { theme: string });
     }
-  }, [sections, header, jobSummary, projectInfo, paymentMethod, contactInfo, signature, selectedTheme, onTemplateChange]);
+  }, [sections, header, jobSummary, projectInfo, paymentMethod, contactInfo, signature, selectedTheme, profitMarginPercent, taxEnabled, onTemplateChange]);
 
   const handleLogoUpload = (file: File) => {
     const reader = new FileReader();
@@ -534,6 +545,10 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
             signature,
             theme: selectedTheme,
           }}
+          profitMarginPercent={profitMarginPercent}
+          onProfitMarginChange={setProfitMarginPercent}
+          taxEnabled={taxEnabled}
+          onTaxEnabledChange={setTaxEnabled}
         />
       </div>
 

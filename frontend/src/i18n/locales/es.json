@@ -7,7 +7,8 @@
     "delete": "Eliminar",
     "close": "Cerrar",
     "confirm": "Confirmar",
-    "back": "Volver"
+    "back": "Volver",
+    "retry": "Reintentar"
   },
   "nav": {
     "tagline": "Presupuestos Inteligentes",
@@ -300,7 +301,18 @@
       },
       "startTrial": "Empezar 7 Días Gratis",
       "continueEditing": "Continuar Editando"
-    }
+    },
+    "download": {
+      "creating": "Creando proyecto y presupuesto...",
+      "success": "¡PDF descargado exitosamente! Proyecto guardado.",
+      "error": "Error al descargar PDF",
+      "noUnits": "No se pudieron encontrar unidades. Por favor intenta de nuevo.",
+      "docxNotSupported": "La descarga DOCX aún no está soportada. Por favor usa PDF.",
+      "viewProject": "Ver Proyecto"
+    },
+    "dataRestored": "Tus datos del proyecto han sido restaurados. Continuando con la descarga...",
+    "restoreError": "Error al restaurar los datos del proyecto. Por favor intenta de nuevo.",
+    "finishAndDownload": "Terminar y Descargar"
   },
   "login": {
     "title": "Iniciar Sesión",
@@ -351,8 +363,18 @@
     "signInLink": "Inicia sesión",
     "success": "¡Cuenta creada exitosamente!",
     "error": "Error al crear la cuenta",
+    "userExists": "Ya existe una cuenta con este correo electrónico. Por favor, inicia sesión en su lugar.",
     "orContinueWith": "O continúa con",
-    "googleSignUp": "Registrarse con Google"
+    "googleSignUp": "Registrarse con Google",
+    "payment": {
+      "title": "Agregar Método de Pago",
+      "subtitle": "Comienza tu prueba gratuita de 7 días. Tu tarjeta se cobrará automáticamente después del período de prueba.",
+      "submit": "Comenzar Prueba Gratuita",
+      "success": "¡Método de pago agregado exitosamente! Tu prueba gratuita de 7 días ha comenzado.",
+      "error": "Error al agregar método de pago",
+      "errorDescription": "No se pudo cargar el formulario de pago. Por favor, intenta de nuevo.",
+      "loading": "Cargando formulario de pago..."
+    }
   },
   "dashboard": {
     "welcome": "Bienvenido",
@@ -380,9 +402,8 @@
   },
   "sidebar": {
     "dashboard": "Dashboard",
-    "projects": "Proyectos",
     "estimates": "Presupuestos",
-    "materials": "Materiales",
+    "resources": "Recursos",
     "clients": "Clientes",
     "billing": "Facturación",
     "settings": "Configuración",
@@ -392,10 +413,10 @@
       "description": "IA y funciones avanzadas incluidas"
     }
   },
-  "projects": {
-    "title": "Proyectos",
-    "subtitle": "Gestiona todos tus proyectos de construcción",
-    "newProject": "Nuevo Proyecto",
+  "estimates": {
+    "title": "Presupuestos",
+    "subtitle": "Gestiona todos tus presupuestos de construcción",
+    "newEstimate": "Nuevo Presupuesto",
     "noDescription": "Sin descripción",
     "areas": "áreas",
     "loading": "Cargando proyectos...",
@@ -403,18 +424,58 @@
       "title": "No hay proyectos aún",
       "description": "Crea tu primer proyecto para comenzar",
       "action": "Crear Proyecto"
+    },
+    "estimates": {
+      "title": "Presupuestos",
+      "estimate": "Presupuesto",
+      "noEstimates": "No hay presupuestos aún",
+      "noEstimatesDesc": "Crea tu primer presupuesto para comenzar",
+      "createFirst": "Crear Primer Presupuesto",
+      "subtotal": "Subtotal",
+      "tax": "Impuesto",
+      "total": "Total",
+      "created": "Creado",
+      "downloadSuccess": "PDF descargado exitosamente",
+      "downloadError": "Error al descargar PDF",
+      "docxNotSupported": "La descarga DOCX aún no está soportada. Por favor usa PDF."
+    },
+    "areas": {
+      "title": "Áreas del Proyecto",
+      "noAreas": "No hay áreas definidas aún"
     }
   },
-  "materials": {
-    "title": "Materiales",
-    "subtitle": "Catálogo de materiales para tus presupuestos",
-    "newMaterial": "Nuevo Material",
-    "search": "Buscar materiales...",
+  "resources": {
+    "title": "Recursos",
+    "subtitle": "Gestiona recursos para usar en tus presupuestos",
+    "newResource": "Nuevo Recurso",
+    "editResource": "Editar Recurso",
+    "search": "Buscar recursos...",
     "category": "Categoría",
     "unit": "Unidad",
     "price": "Precio",
     "stock": "Stock",
-    "loading": "Cargando materiales..."
+    "loading": "Cargando recursos...",
+    "created": "Recurso creado exitosamente",
+    "updated": "Recurso actualizado exitosamente",
+    "saveError": "Error al guardar el recurso",
+    "requiredFields": "Por favor completa todos los campos requeridos",
+    "form": {
+      "name": "Nombre",
+      "namePlaceholder": "Nombre del recurso",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Descripción opcional",
+      "category": "Categoría",
+      "unit": "Unidad",
+      "basePrice": "Precio Base",
+      "taxRate": "Tasa de Impuesto (%)",
+      "performanceFactor": "Factor de Rendimiento",
+      "sku": "SKU",
+      "skuPlaceholder": "Código SKU opcional",
+      "supplier": "Proveedor",
+      "supplierPlaceholder": "Nombre del proveedor opcional",
+      "supplierUrl": "URL del Proveedor",
+      "supplierUrlPlaceholder": "Sitio web del proveedor opcional"
+    }
   },
   "clients": {
     "title": "Clientes",
@@ -433,6 +494,7 @@
     "saveError": "Error al guardar el cliente",
     "deleteError": "Error al eliminar el cliente",
     "confirmDelete": "¿Estás seguro de que deseas eliminar este cliente?",
+    "requiredFields": "El nombre y el teléfono son obligatorios",
     "form": {
       "name": "Nombre de Contacto",
       "namePlaceholder": "Juan Pérez",
@@ -507,7 +569,15 @@
       "requiredSection": "Sección requerida",
       "dragToReorder": "Arrastra para reordenar secciones",
       "thisSectionRequired": "Esta sección es requerida",
-      "canEnableDisable": "Puedes habilitar o deshabilitar esta sección"
+      "canEnableDisable": "Puedes habilitar o deshabilitar esta sección",
+      "profitMargin": "Margen de Utilidad",
+      "profitMarginPercent": "Margen de Utilidad",
+      "profitMarginDesc": "Establece el porcentaje de margen de utilidad que se aplicará al subtotal. Esto se mostrará en los totales del presupuesto.",
+      "tax": "Impuesto",
+      "taxPercent": "Tasa de Impuesto",
+      "taxDesc": "Establece el porcentaje de impuesto que se aplicará al presupuesto. El impuesto se mostrará si está habilitado o si los recursos tienen tasas de impuesto.",
+      "enableTax": "Habilitar Impuesto",
+      "enableTaxDesc": "Habilita el cálculo de impuestos en el presupuesto. El impuesto se mostrará si está habilitado o si los recursos tienen tasas de impuesto."
     },
     "header": {
       "title": "Información del Encabezado",
@@ -615,7 +685,9 @@
     "preview": {
       "zoomIn": "Acercar",
       "zoomOut": "Alejar",
-      "totalEstimate": "Total del Presupuesto"
+      "totalEstimate": "Total del Presupuesto",
+      "subtotal": "Subtotal",
+      "tax": "Impuesto"
     },
     "mobile": {
       "tools": "HERRAMIENTAS",

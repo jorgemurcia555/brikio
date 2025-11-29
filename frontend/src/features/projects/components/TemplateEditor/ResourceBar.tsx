@@ -79,7 +79,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
 
 export function ResourceBar({ selectedTrade, onAddResource }: ResourceBarProps) {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   
   // Fetch user's custom materials/resources
   const { data: customMaterials } = useQuery({
@@ -92,27 +92,45 @@ export function ResourceBar({ selectedTrade, onAddResource }: ResourceBarProps) 
     if (!selectedTrade) return [];
     const defaultResources = RESOURCE_TEMPLATES.filter((r) => r.tradeId === selectedTrade);
     
-    // Add custom materials as resources if user is authenticated
-    if (isAuthenticated && customMaterials?.data) {
-      const customResources: ResourceTemplate[] = customMaterials.data
-        .filter((m: any) => m.user) // Only user's custom materials
+    // Add user's custom materials/resources - always show them regardless of category
+    if (isAuthenticated && customMaterials && user) {
+      // The API interceptor returns response.data directly, which is { success: true, data: [...], timestamp: ... }
+      // Then axios interceptor returns response.data, so we get { success: true, data: [...], timestamp: ... }
+      let materialsData: any[] = [];
+      
+      if (Array.isArray(customMaterials)) {
+        materialsData = customMaterials;
+      } else if (customMaterials?.data && Array.isArray(customMaterials.data)) {
+        materialsData = customMaterials.data;
+      }
+      
+      // Filter for user's materials and map to ResourceTemplate
+      const customResources: ResourceTemplate[] = materialsData
+        .filter((m: any) => {
+          // Filter for user's materials: check if user exists and matches current user
+          if (!m.user) return false;
+          // user can be an object with id or just an id string
+          const userId = typeof m.user === 'object' ? m.user?.id : m.user;
+          return userId === user.id;
+        })
         .map((m: any) => ({
           id: `custom-${m.id}`,
           label: m.name,
           description: m.description || m.name,
           icon: 'Box', // Default icon
-          tradeId: selectedTrade,
-          category: m.category?.name || 'Custom',
+          tradeId: selectedTrade, // Use selected trade for display purposes
+          category: m.category?.name || 'My Resources', // Show as "My Resources" if no category
           defaultQuantity: 1,
-          defaultUnit: m.unit?.name || 'pcs',
+          defaultUnit: m.unit?.name || m.unit?.abbreviation || 'pcs',
           defaultPrice: parseFloat(m.basePrice) || 0,
         }));
       
+      // Always include user's resources, even if they don't match the selected trade
       return [...defaultResources, ...customResources];
     }
     
     return defaultResources;
-  }, [selectedTrade, isAuthenticated, customMaterials]);
+  }, [selectedTrade, isAuthenticated, customMaterials, user]);
 
   if (!selectedTrade || filteredResources.length === 0) {
     return null;

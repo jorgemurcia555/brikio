@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapPin, Search, User } from 'lucide-react';
 import { EditableField } from './EditableField';
 import { ProjectInfo } from '../../types/template.types';
@@ -19,12 +19,30 @@ export function ProjectInfoSection({ projectInfo, onChange, layout, readOnly = f
   const [clients, setClients] = useState<Client[]>([]);
   const [showClientSearch, setShowClientSearch] = useState(false);
   const [clientSearchTerm, setClientSearchTerm] = useState('');
+  const clientSearchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isAuthenticated && !readOnly) {
       clientsService.getAll().then(setClients).catch(() => {});
     }
   }, [isAuthenticated, readOnly]);
+
+  // Close client search modal when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (clientSearchRef.current && !clientSearchRef.current.contains(event.target as Node)) {
+        setShowClientSearch(false);
+        setClientSearchTerm('');
+      }
+    };
+
+    if (showClientSearch) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showClientSearch]);
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(clientSearchTerm.toLowerCase()) ||
@@ -122,7 +140,7 @@ export function ProjectInfoSection({ projectInfo, onChange, layout, readOnly = f
                     </button>
                   </div>
                   {showClientSearch && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-[#F4C197] rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+                    <div ref={clientSearchRef} className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-[#F4C197] rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
                       <div className="p-2 border-b border-[#F4C197]">
                         <input
                           type="text"

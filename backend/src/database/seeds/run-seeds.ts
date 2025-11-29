@@ -33,7 +33,16 @@ async function runSeeds() {
   // Seed Plans
   console.log('📋 Seeding plans...');
   
-  const trialPlan = plansRepository.create({
+  // Check if plans already exist
+  const existingTrialPlan = await plansRepository.findOne({ where: { name: PlanName.TRIAL } });
+  const existingBasicPlan = await plansRepository.findOne({ where: { name: PlanName.BASIC } });
+  const existingPremiumPlan = await plansRepository.findOne({ where: { name: PlanName.PREMIUM } });
+
+  // Get Stripe price IDs (support both naming conventions)
+  const basicStripePriceId = process.env.STRIPE_BASIC_PLAN_PRICE_ID || process.env.STRIPE_FREE_PLAN_PRICE_ID;
+  const premiumStripePriceId = process.env.STRIPE_PREMIUM_PLAN_PRICE_ID || process.env.STRIPE_PRO_PLAN_PRICE_ID;
+
+  const trialPlan = existingTrialPlan || plansRepository.create({
     name: PlanName.TRIAL,
     displayName: 'Try First',
     price: 0,
@@ -49,7 +58,7 @@ async function runSeeds() {
     isActive: true,
   });
 
-  const basicPlan = plansRepository.create({
+  const basicPlan = existingBasicPlan || plansRepository.create({
     name: PlanName.BASIC,
     displayName: 'Basic',
     price: 7.00,
@@ -63,10 +72,14 @@ async function runSeeds() {
       prioritySupport: false,
     },
     isActive: true,
-    stripePriceId: process.env.STRIPE_BASIC_PLAN_PRICE_ID,
   });
 
-  const premiumPlan = plansRepository.create({
+  // Update stripePriceId if it's not set or if env var is available
+  if (basicStripePriceId && (!basicPlan.stripePriceId || basicPlan.stripePriceId !== basicStripePriceId)) {
+    basicPlan.stripePriceId = basicStripePriceId;
+  }
+
+  const premiumPlan = existingPremiumPlan || plansRepository.create({
     name: PlanName.PREMIUM,
     displayName: 'Premium',
     price: 18.00,
@@ -80,11 +93,21 @@ async function runSeeds() {
       prioritySupport: true,
     },
     isActive: true,
-    stripePriceId: process.env.STRIPE_PREMIUM_PLAN_PRICE_ID,
   });
 
+  // Update stripePriceId if it's not set or if env var is available
+  if (premiumStripePriceId && (!premiumPlan.stripePriceId || premiumPlan.stripePriceId !== premiumStripePriceId)) {
+    premiumPlan.stripePriceId = premiumStripePriceId;
+  }
+
   await plansRepository.save([trialPlan, basicPlan, premiumPlan]);
-  console.log('✅ Plans seeded (Trial $0, Basic $7, Premium $18)');
+  console.log('✅ Plans seeded/updated (Trial $0, Basic $7, Premium $18)');
+  if (basicStripePriceId) {
+    console.log(`   ✓ Basic plan configured with Stripe price ID`);
+  }
+  if (premiumStripePriceId) {
+    console.log(`   ✓ Premium plan configured with Stripe price ID`);
+  }
 
   // Seed Units
   console.log('📏 Seeding units...');
@@ -99,10 +122,21 @@ async function runSeeds() {
     { name: 'Tonelada', abbreviation: 'ton', conversionFactor: 1000 },
   ];
 
-  const savedUnits = await unitsRepository.save(
-    units.map((u) => unitsRepository.create(u)),
-  );
-  console.log('✅ Units seeded');
+  // Check which units already exist
+  const existingUnits = await unitsRepository.find();
+  const existingUnitNames = new Set(existingUnits.map(u => u.name));
+  
+  // Only create units that don't exist
+  const unitsToCreate = units.filter(u => !existingUnitNames.has(u.name));
+  
+  if (unitsToCreate.length > 0) {
+    const savedUnits = await unitsRepository.save(
+      unitsToCreate.map((u) => unitsRepository.create(u)),
+    );
+    console.log(`✅ Created ${savedUnits.length} new units`);
+  } else {
+    console.log('✅ All units already exist');
+  }
 
   // Seed Categories
   console.log('📂 Seeding categories...');
@@ -115,18 +149,34 @@ async function runSeeds() {
     { name: 'Herrería', icon: '🔨', color: '#FB923C', sortOrder: 6 },
   ];
 
-  const savedCategories = await categoriesRepository.save(
-    categories.map((c) => categoriesRepository.create(c)),
-  );
-  console.log('✅ Categories seeded');
+  // Check which categories already exist
+  const existingCategories = await categoriesRepository.find();
+  const existingCategoryNames = new Set(existingCategories.map(c => c.name));
+  
+  // Only create categories that don't exist
+  const categoriesToCreate = categories.filter(c => !existingCategoryNames.has(c.name));
+  
+  if (categoriesToCreate.length > 0) {
+    const savedCategories = await categoriesRepository.save(
+      categoriesToCreate.map((c) => categoriesRepository.create(c)),
+    );
+    console.log(`✅ Created ${savedCategories.length} new categories`);
+  } else {
+    console.log('✅ All categories already exist');
+  }
+  
+  // Get all categories (existing + newly created) for materials
+  const allCategories = await categoriesRepository.find();
 
   // Seed Materials
   console.log('🧱 Seeding materials...');
-  const m2Unit = savedUnits.find((u) => u.abbreviation === 'm²');
-  const sacoUnit = savedUnits.find((u) => u.abbreviation === 'saco');
-  const pzaUnit = savedUnits.find((u) => u.abbreviation === 'pza');
+  // Get all units (existing + newly created)
+  const allUnits = await unitsRepository.find();
+  const m2Unit = allUnits.find((u) => u.abbreviation === 'm²');
+  const sacoUnit = allUnits.find((u) => u.abbreviation === 'saco');
+  const pzaUnit = allUnits.find((u) => u.abbreviation === 'pza');
 
-  const albanileriaCategory = savedCategories.find((c) => c.name === 'Albañilería');
+  const albanileriaCategory = allCategories.find((c) => c.name === 'Albañilería');
 
   const materials = [
     {
@@ -158,10 +208,21 @@ async function runSeeds() {
     },
   ];
 
-  await materialsRepository.save(
-    materials.map((m) => materialsRepository.create(m)),
-  );
-  console.log('✅ Materials seeded');
+  // Check which materials already exist
+  const existingMaterials = await materialsRepository.find();
+  const existingMaterialNames = new Set(existingMaterials.map(m => m.name));
+  
+  // Only create materials that don't exist
+  const materialsToCreate = materials.filter(m => !existingMaterialNames.has(m.name));
+  
+  if (materialsToCreate.length > 0) {
+    await materialsRepository.save(
+      materialsToCreate.map((m) => materialsRepository.create(m)),
+    );
+    console.log(`✅ Created ${materialsToCreate.length} new materials`);
+  } else {
+    console.log('✅ All materials already exist');
+  }
 
   // Seed Template Items
   console.log('📝 Seeding template items...');
@@ -202,10 +263,21 @@ async function runSeeds() {
     },
   ];
 
-  for (const template of templates) {
-    await templatesRepository.save(templatesRepository.create(template as any));
+  // Check which templates already exist
+  const existingTemplates = await templatesRepository.find();
+  const existingTemplateNames = new Set(existingTemplates.map(t => t.name));
+  
+  // Only create templates that don't exist
+  const templatesToCreate = templates.filter(t => !existingTemplateNames.has(t.name));
+  
+  if (templatesToCreate.length > 0) {
+    for (const template of templatesToCreate) {
+      await templatesRepository.save(templatesRepository.create(template as any));
+    }
+    console.log(`✅ Created ${templatesToCreate.length} new template items`);
+  } else {
+    console.log('✅ All template items already exist');
   }
-  console.log('✅ Template items seeded');
 
   await AppDataSource.destroy();
   console.log('🎉 Seeding completed successfully!');

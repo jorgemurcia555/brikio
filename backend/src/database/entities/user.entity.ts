@@ -74,6 +74,9 @@ export class User {
   @Exclude()
   refreshToken: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  stripeCustomerId: string | null;
+
   @OneToOne(() => Subscription, (subscription) => subscription.user, {
     eager: true,
   })
