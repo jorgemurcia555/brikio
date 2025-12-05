@@ -188,7 +188,21 @@ export function GuestProjectPage() {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      return { blob: response.data as Blob, estimateId, projectId };
+      
+      // Check if response is actually a PDF (starts with PDF header) or an error JSON
+      const blob = response.data as Blob;
+      if (blob.type === 'application/json' || blob.size < 100) {
+        // Likely an error response, try to parse it
+        const text = await blob.text();
+        try {
+          const errorData = JSON.parse(text);
+          throw new Error(errorData.message || 'Failed to generate PDF');
+        } catch (parseError) {
+          throw new Error('Failed to generate PDF. Please try again.');
+        }
+      }
+      
+      return { blob, estimateId, projectId };
     },
     onSuccess: ({ blob, estimateId }: { blob: Blob; estimateId: string; projectId: string }) => {
       // Create download link

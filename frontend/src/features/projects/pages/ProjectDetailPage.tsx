@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { FileText, Plus, ArrowLeft, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../../i18n/config';
 import axios from 'axios';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
@@ -24,14 +25,32 @@ export function ProjectDetailPage() {
 
   const downloadPdfMutation = useMutation({
     mutationFn: async (estimateId: string) => {
+      // Use axios directly to handle blob response correctly
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
-      const response = await axios.get(`${API_URL}/pdf/estimate/${estimateId}`, {
+      const { accessToken } = useAuthStore.getState();
+      // Get current language from i18n
+      const currentLanguage = i18n.language || 'en';
+      const response = await axios.get(`${API_URL}/pdf/estimate/${estimateId}?lang=${currentLanguage}`, {
         responseType: 'blob',
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      return { blob: response.data as Blob, estimateId };
+      
+      // Check if response is actually a PDF (starts with PDF header) or an error JSON
+      const blob = response.data as Blob;
+      if (blob.type === 'application/json' || blob.size < 100) {
+        // Likely an error response, try to parse it
+        const text = await blob.text();
+        try {
+          const errorData = JSON.parse(text);
+          throw new Error(errorData.message || 'Failed to generate PDF');
+        } catch (parseError) {
+          throw new Error('Failed to generate PDF. Please try again.');
+        }
+      }
+      
+      return { blob, estimateId };
     },
     onSuccess: ({ blob, estimateId }: { blob: Blob; estimateId: string }) => {
       const url = window.URL.createObjectURL(blob);
