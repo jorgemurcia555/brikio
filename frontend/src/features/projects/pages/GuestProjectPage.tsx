@@ -114,12 +114,13 @@ export function GuestProjectPage() {
   }, [isAuthenticated, dataRestored, searchParams, t]);
 
   // Fetch units for mapping unit strings to unitIds
-  const { data: unitsResponse, isLoading: isLoadingUnits, error: unitsError } = useQuery({
+  const { data: unitsResponse, isLoading: isLoadingUnits, error: unitsError } = useQuery<any[]>({
     queryKey: ['units'],
     queryFn: async () => {
       try {
         const response = await api.get('/materials/units');
-        return response;
+        // API interceptor returns response.data, so response is already the array
+        return Array.isArray(response) ? response : (response?.data || []);
       } catch (error: any) {
         console.error('Error fetching units:', error);
         throw error;
@@ -131,7 +132,7 @@ export function GuestProjectPage() {
   });
   
   // Extract units from response (API interceptor returns response.data)
-  const units = unitsResponse?.data || unitsResponse || [];
+  const units: any[] = Array.isArray(unitsResponse) ? unitsResponse : (unitsResponse?.data || []);
 
   // Trigger download after data is restored and user is authenticated
   useEffect(() => {
@@ -331,7 +332,7 @@ export function GuestProjectPage() {
           await new Promise(resolve => setTimeout(resolve, 100));
           attempts++;
           // Check if units are now loaded
-          const currentUnits = unitsResponse?.data || unitsResponse || [];
+          const currentUnits: any[] = Array.isArray(unitsResponse) ? unitsResponse : (unitsResponse?.data || []);
           if (currentUnits && Array.isArray(currentUnits) && currentUnits.length > 0) {
             break;
           }
@@ -339,7 +340,7 @@ export function GuestProjectPage() {
       }
 
       // Re-fetch units from response after waiting
-      const currentUnits = unitsResponse?.data || unitsResponse || [];
+      const currentUnits: any[] = Array.isArray(unitsResponse) ? unitsResponse : (unitsResponse?.data || []);
 
       // Check if units loaded successfully
       if (unitsError) {
