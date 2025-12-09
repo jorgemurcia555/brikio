@@ -132,7 +132,15 @@ export function GuestProjectPage() {
   });
   
   // Extract units from response (API interceptor returns response.data)
-  const units: any[] = Array.isArray(unitsResponse) ? unitsResponse : (unitsResponse?.data || []);
+  // Handle both cases: when response is array directly or when it has a data property
+  const units: any[] = (() => {
+    if (!unitsResponse) return [];
+    if (Array.isArray(unitsResponse)) return unitsResponse;
+    if (typeof unitsResponse === 'object' && 'data' in unitsResponse) {
+      return Array.isArray(unitsResponse.data) ? unitsResponse.data : [];
+    }
+    return [];
+  })();
 
   // Trigger download after data is restored and user is authenticated
   useEffect(() => {
@@ -332,15 +340,29 @@ export function GuestProjectPage() {
           await new Promise(resolve => setTimeout(resolve, 100));
           attempts++;
           // Check if units are now loaded
-          const currentUnits: any[] = Array.isArray(unitsResponse) ? unitsResponse : (unitsResponse?.data || []);
-          if (currentUnits && Array.isArray(currentUnits) && currentUnits.length > 0) {
+          const checkUnits: any[] = (() => {
+            if (!unitsResponse) return [];
+            if (Array.isArray(unitsResponse)) return unitsResponse;
+            if (typeof unitsResponse === 'object' && 'data' in unitsResponse) {
+              return Array.isArray(unitsResponse.data) ? unitsResponse.data : [];
+            }
+            return [];
+          })();
+          if (checkUnits && Array.isArray(checkUnits) && checkUnits.length > 0) {
             break;
           }
         }
       }
 
       // Re-fetch units from response after waiting
-      const currentUnits: any[] = Array.isArray(unitsResponse) ? unitsResponse : (unitsResponse?.data || []);
+      const currentUnits: any[] = (() => {
+        if (!unitsResponse) return [];
+        if (Array.isArray(unitsResponse)) return unitsResponse;
+        if (typeof unitsResponse === 'object' && 'data' in unitsResponse) {
+          return Array.isArray(unitsResponse.data) ? unitsResponse.data : [];
+        }
+        return [];
+      })();
 
       // Check if units loaded successfully
       if (unitsError) {
