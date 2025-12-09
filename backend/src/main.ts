@@ -16,6 +16,18 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   
+  // Health check endpoints FIRST (before any middleware) - Railway checks root path
+  const httpAdapter = app.getHttpAdapter();
+  httpAdapter.get('/', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'budgetapp-backend' });
+  });
+  httpAdapter.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'budgetapp-backend' });
+  });
+  httpAdapter.get('/healthcheck', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'budgetapp-backend' });
+  });
+  
   // Increase body size limit to handle large template data (50MB)
   // This must be done before any routes are registered
   const express = require('express');
@@ -31,8 +43,10 @@ async function bootstrap() {
     // Continue even if initialization fails (might already be initialized)
   }
 
-  // Security
-  app.use(helmet());
+  // Security (but allow healthcheck to work)
+  app.use(helmet({
+    contentSecurityPolicy: false, // Disable CSP for healthcheck
+  }));
   app.use(compression());
 
   // CORS - Simplified for production: allow all origins
@@ -70,14 +84,6 @@ async function bootstrap() {
     console.log(`🌐 CORS configured for origins: ${allowedOrigins.join(', ')}`);
   }
 
-  // Health check endpoint (before global prefix)
-  app.getHttpAdapter().get('/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
-  app.getHttpAdapter().get('/healthcheck', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
-
   // Global prefix
   const apiPrefix = configService.get('API_PREFIX') || 'api/v1';
   app.setGlobalPrefix(apiPrefix);
@@ -100,15 +106,17 @@ async function bootstrap() {
   // Global interceptors
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  const port = configService.get('PORT') || 3000;
-  await app.listen(port);
+  // Railway uses PORT environment variable automatically
+  const port = process.env.PORT || configService.get('PORT') || 3000;
+  await app.listen(port, '0.0.0.0'); // Listen on all interfaces for Railway
 
   console.log(`
-    🚀 BudgetApp API running on: http://localhost:${port}/${apiPrefix}
+    🚀 BudgetApp API running on: http://0.0.0.0:${port}/${apiPrefix}
     📚 Environment: ${configService.get('NODE_ENV')}
     🗄️  Database: ${configService.get('DATABASE_URL') ? 'Connected via DATABASE_URL' : `${configService.get('DB_HOST')}:${configService.get('DB_PORT')}`}
     🌐 Frontend URL: ${frontendUrl || 'Not configured'}
     🔒 CORS: ${isProduction ? 'Allowing all origins' : `Origins: ${allowedOrigins.join(', ')}`}
+    ✅ Healthcheck available at: http://0.0.0.0:${port}/health
   `);
 }
 
