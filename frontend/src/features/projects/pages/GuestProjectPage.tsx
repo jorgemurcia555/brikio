@@ -136,8 +136,11 @@ export function GuestProjectPage() {
   const units: any[] = (() => {
     if (!unitsResponse) return [];
     if (Array.isArray(unitsResponse)) return unitsResponse;
-    if (typeof unitsResponse === 'object' && 'data' in unitsResponse) {
-      return Array.isArray(unitsResponse.data) ? unitsResponse.data : [];
+    if (typeof unitsResponse === 'object') {
+      const responseWithData = unitsResponse as { data?: any[] };
+      if ('data' in responseWithData && Array.isArray(responseWithData.data)) {
+        return responseWithData.data;
+      }
     }
     return [];
   })();
@@ -343,8 +346,11 @@ export function GuestProjectPage() {
           const checkUnits: any[] = (() => {
             if (!unitsResponse) return [];
             if (Array.isArray(unitsResponse)) return unitsResponse;
-            if (typeof unitsResponse === 'object' && 'data' in unitsResponse) {
-              return Array.isArray(unitsResponse.data) ? unitsResponse.data : [];
+            if (typeof unitsResponse === 'object') {
+              const responseWithData = unitsResponse as { data?: any[] };
+              if ('data' in responseWithData && Array.isArray(responseWithData.data)) {
+                return responseWithData.data;
+              }
             }
             return [];
           })();
@@ -358,8 +364,11 @@ export function GuestProjectPage() {
       const currentUnits: any[] = (() => {
         if (!unitsResponse) return [];
         if (Array.isArray(unitsResponse)) return unitsResponse;
-        if (typeof unitsResponse === 'object' && 'data' in unitsResponse) {
-          return Array.isArray(unitsResponse.data) ? unitsResponse.data : [];
+        if (typeof unitsResponse === 'object') {
+          const responseWithData = unitsResponse as { data?: any[] };
+          if ('data' in responseWithData && Array.isArray(responseWithData.data)) {
+            return responseWithData.data;
+          }
         }
         return [];
       })();

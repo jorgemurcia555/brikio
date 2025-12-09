@@ -16,6 +16,7 @@ import { AiModule } from './modules/ai/ai.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { PdfModule } from './modules/pdf/pdf.module';
 import { EstimateTemplatesModule } from './modules/estimate-templates/estimate-templates.module';
+import { HealthController } from './common/controllers/health.controller';
 
 @Module({
   imports: [
@@ -89,6 +90,7 @@ import { EstimateTemplatesModule } from './modules/estimate-templates/estimate-t
     PdfModule,
     EstimateTemplatesModule,
   ],
+  controllers: [HealthController],
 })
 export class AppModule {}
 

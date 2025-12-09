@@ -70,6 +70,14 @@ async function bootstrap() {
     console.log(`🌐 CORS configured for origins: ${allowedOrigins.join(', ')}`);
   }
 
+  // Health check endpoint (before global prefix)
+  app.getHttpAdapter().get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+  app.getHttpAdapter().get('/healthcheck', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
   // Global prefix
   const apiPrefix = configService.get('API_PREFIX') || 'api/v1';
   app.setGlobalPrefix(apiPrefix);
