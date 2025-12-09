@@ -682,19 +682,38 @@ export function GuestProjectPage() {
         {/* Step 3: Preview */}
         {currentStep === 'preview' && (
           <div className="w-full">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
               <div className="flex items-center gap-2 sm:gap-3">
-                <FileTextIcon className="w-6 h-6 sm:w-8 sm:h-8 text-[#F15A24] flex-shrink-0" />
-                <h2 className="text-xl sm:text-3xl font-display text-[#8A3B12]">Preview Estimate</h2>
+                <FileTextIcon className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-[#F15A24] flex-shrink-0" />
+                <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-display text-[#8A3B12]">Preview Estimate</h2>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                {isAuthenticated && (
+                  <Button 
+                    variant="primary" 
+                    size="sm"
+                    onClick={async () => {
+                      await handleDownload('pdf');
+                      setTimeout(() => {
+                        navigate('/estimates');
+                      }, 1000);
+                    }}
+                    icon={<Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                    className="w-full sm:w-auto order-1 sm:order-2"
+                  >
+                    <span className="hidden sm:inline">{t('guestProject.download.finishAndDownload')}</span>
+                    <span className="sm:hidden">Terminar y Descargar</span>
+                  </Button>
+                )}
                 <Button 
                   variant="primary" 
+                  size="sm"
                   onClick={() => handleDownload('pdf')} 
-                  icon={<Download className="w-4 h-4 sm:w-5 sm:h-5" />}
-                  className="w-full sm:w-auto"
+                  icon={<Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                  className="w-full sm:w-auto order-2 sm:order-1"
                 >
-                  Download PDF
+                  <span className="hidden sm:inline">Download PDF</span>
+                  <span className="sm:hidden">PDF</span>
                 </Button>
                 {/* DOCX button disabled for now */}
                 {/* <Button 

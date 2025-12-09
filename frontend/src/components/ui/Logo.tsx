@@ -43,7 +43,8 @@ export function Logo({
       <img 
         src={logoSrc} 
         alt="Brikio Logo" 
-        className={clsx(sizes[size], 'min-w-[24px] flex-shrink-0')}
+        className={clsx(sizes[size], 'min-w-[24px] flex-shrink-0 object-contain')}
+        style={{ aspectRatio: '1 / 1' }}
       />
       {showText && (
         <span className={clsx(

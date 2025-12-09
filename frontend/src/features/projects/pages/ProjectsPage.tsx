@@ -16,21 +16,23 @@ export function ProjectsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-secondary-900">{t('estimates.title')}</h1>
-          <p className="text-secondary-600 mt-1">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-secondary-900">{t('estimates.title')}</h1>
+          <p className="text-xs sm:text-sm text-secondary-600 mt-0.5 sm:mt-1">
             {t('estimates.subtitle')}
           </p>
         </div>
         <Button
           variant="primary"
-          size="lg"
-          icon={<Plus className="w-5 h-5" />}
+          size="sm"
+          className="w-full sm:w-auto"
+          icon={<Plus className="w-4 h-4 sm:w-5 sm:h-5" />}
           onClick={() => navigate('/projects/new?new=true')}
         >
-          {t('estimates.newEstimate')}
+          <span className="hidden sm:inline">{t('estimates.newEstimate')}</span>
+          <span className="sm:hidden">Nuevo</span>
         </Button>
       </div>
 
@@ -40,27 +42,27 @@ export function ProjectsPage() {
             <Card key={i} className="h-32 animate-pulse bg-secondary-100" />
           ))}
         </div>
-      ) : estimates?.data && estimates.data.length > 0 ? (
+      ) : (estimates?.data && estimates.data.length > 0) || (Array.isArray(estimates) && estimates.length > 0) ? (
         <div className="space-y-4">
-          {estimates.data.map((estimate: any) => (
+          {(estimates?.data || estimates || []).map((estimate: any) => (
             <Card
               key={estimate.id}
               hover
               className="cursor-pointer"
               onClick={() => navigate(`/estimates/${estimate.id}`)}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="p-3 bg-primary-100 rounded-lg">
-                    <FileText className="w-5 h-5 text-primary-600" />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                <div className="flex items-start sm:items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full sm:w-auto">
+                  <div className="p-2 sm:p-3 bg-primary-100 rounded-lg flex-shrink-0">
+                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600" />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-secondary-900">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2 flex-wrap">
+                      <h3 className="font-semibold text-sm sm:text-base text-secondary-900 truncate">
                         {t('estimates.estimates.estimate')} #{estimate.version || 1}
                       </h3>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium flex-shrink-0 ${
                           estimate.status === 'approved'
                             ? 'bg-green-100 text-green-700'
                             : estimate.status === 'rejected'
@@ -73,39 +75,40 @@ export function ProjectsPage() {
                         {estimate.status || 'draft'}
                       </span>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm">
                       <div>
-                        <p className="text-secondary-600">{t('estimates.estimates.subtotal')}</p>
-                        <p className="font-semibold text-secondary-900">
+                        <p className="text-secondary-600 text-xs">{t('estimates.estimates.subtotal')}</p>
+                        <p className="font-semibold text-secondary-900 text-xs sm:text-sm">
                           ${parseFloat(estimate.subtotal || 0).toFixed(2)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-secondary-600">{t('estimates.estimates.tax')}</p>
-                        <p className="font-semibold text-secondary-900">
+                        <p className="text-secondary-600 text-xs">{t('estimates.estimates.tax')}</p>
+                        <p className="font-semibold text-secondary-900 text-xs sm:text-sm">
                           ${parseFloat(estimate.taxTotal || 0).toFixed(2)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-secondary-600">{t('estimates.estimates.total')}</p>
-                        <p className="font-semibold text-primary-600 text-lg">
+                        <p className="text-secondary-600 text-xs">{t('estimates.estimates.total')}</p>
+                        <p className="font-semibold text-primary-600 text-sm sm:text-base md:text-lg">
                           ${parseFloat(estimate.total || 0).toFixed(2)}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-secondary-600">{t('estimates.estimates.created')}</p>
-                        <p className="font-semibold text-secondary-900">
+                      <div className="hidden sm:block">
+                        <p className="text-secondary-600 text-xs">{t('estimates.estimates.created')}</p>
+                        <p className="font-semibold text-secondary-900 text-xs sm:text-sm">
                           {new Date(estimate.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2 ml-4" onClick={(e) => e.stopPropagation()}>
+                <div className="flex gap-2 w-full sm:w-auto sm:ml-4" onClick={(e) => e.stopPropagation()}>
                   <Button
                     variant="outline"
                     size="sm"
-                    icon={<Download className="w-4 h-4" />}
+                    className="flex-1 sm:flex-none text-xs sm:text-sm"
+                    icon={<Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                     onClick={() => {
                       // Download will be handled in detail page
                       navigate(`/estimates/${estimate.id}`);

@@ -140,12 +140,12 @@ export function EstimatePreview({
       )}
       
       <div 
-        className="bg-white w-full max-w-4xl mx-auto shadow-sm" 
+        className="bg-white w-full max-w-4xl mx-auto shadow-sm overflow-x-auto" 
         style={{ 
-          minHeight: '800px', 
-          padding: isMobile ? '20px' : '60px 80px', 
+          minHeight: isMobile ? '600px' : '800px', 
+          padding: isMobile ? '12px 16px' : '40px 60px', 
           fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', 
-          lineHeight: '1.6',
+          lineHeight: '1.5',
           transform: isMobile ? `scale(${zoomLevel})` : 'none',
           transformOrigin: 'top left',
           width: isMobile ? `${100 / zoomLevel}%` : '100%',
@@ -160,7 +160,7 @@ export function EstimatePreview({
               return null;
             }
             return (
-              <div key={section.id} className="mb-10 pb-8" style={{ borderBottom: `2px solid ${themeColors.primary}` }}>
+              <div key={section.id} className={`mb-6 sm:mb-10 pb-4 sm:pb-8`} style={{ borderBottom: `2px solid ${themeColors.primary}` }}>
                 <EstimateHeaderComponent
                   header={header}
                   onChange={() => {}}
@@ -175,7 +175,7 @@ export function EstimatePreview({
               return null;
             }
             return (
-              <div key={section.id} className="mb-8 pb-6" style={{ borderBottom: `1px solid ${themeColors.border}` }}>
+              <div key={section.id} className={`mb-4 sm:mb-8 pb-3 sm:pb-6`} style={{ borderBottom: `1px solid ${themeColors.border}` }}>
                 <JobSummarySection
                   jobSummary={jobSummary}
                   onChange={() => {}}
@@ -191,7 +191,7 @@ export function EstimatePreview({
               return null;
             }
             return (
-              <div key={section.id} className="mb-8 pb-6" style={{ borderBottom: `1px solid ${themeColors.border}` }}>
+              <div key={section.id} className={`mb-4 sm:mb-8 pb-3 sm:pb-6`} style={{ borderBottom: `1px solid ${themeColors.border}` }}>
                 <ProjectInfoSection
                   projectInfo={projectInfo}
                   onChange={() => {}}
@@ -257,46 +257,46 @@ export function EstimatePreview({
                 </div>
 
                 {/* Mobile Cards */}
-                <div className="md:hidden space-y-3">
+                <div className="md:hidden space-y-2.5">
                   {lineItems.map((item) => (
-                    <div key={item.id} className="border-b border-[#F4C197] pb-3">
-                      <div className="text-sm font-semibold text-[#8A3B12] mb-2 break-words">{item.description || '—'}</div>
-                      <div className="grid grid-cols-2 gap-3 mb-2 text-sm">
+                    <div key={item.id} className="border-b border-[#F4C197] pb-2.5 last:border-b-0">
+                      <div className="text-xs sm:text-sm font-semibold text-[#8A3B12] mb-1.5 break-words">{item.description || '—'}</div>
+                      <div className="grid grid-cols-2 gap-2 mb-1.5 text-xs">
                         <div>
-                          <span className="text-[#C05A2B] font-semibold">{t('templateEditor.itemsTable.quantity')}: </span>
+                          <span className="text-[#C05A2B] font-medium">{t('templateEditor.itemsTable.quantity')}: </span>
                           <span className="text-[#6C4A32]">{item.quantity || 0}</span>
                         </div>
                         <div>
-                          <span className="text-[#C05A2B] font-semibold">{t('templateEditor.itemsTable.unitPrice')}: </span>
+                          <span className="text-[#C05A2B] font-medium">{t('templateEditor.itemsTable.unitPrice')}: </span>
                           <span className="text-[#6C4A32]">${(item.unitPrice || 0).toFixed(2)}</span>
                         </div>
                       </div>
-                      <div className="pt-2 border-t border-[#F4C197] flex justify-between items-center">
-                        <span className="text-sm font-semibold text-[#8A3B12]">{t('templateEditor.itemsTable.total')}:</span>
-                        <span className="text-base font-bold text-[#F15A24]">
+                      <div className="pt-1.5 border-t border-[#F4C197] flex justify-between items-center">
+                        <span className="text-xs font-semibold text-[#8A3B12]">{t('templateEditor.itemsTable.total')}:</span>
+                        <span className="text-sm font-bold text-[#F15A24]">
                           ${(item.quantity * item.unitPrice).toFixed(2)}
                         </span>
                       </div>
                     </div>
                   ))}
-                  <div className="mt-4 pt-4 border-t-2 border-[#8A3B12] space-y-2">
+                  <div className="mt-3 pt-3 border-t-2 border-[#8A3B12] space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-[#6C4A32]">{t('templateEditor.preview.subtotal', { defaultValue: 'Subtotal' })}:</span>
-                      <span className="text-sm font-semibold text-[#8A3B12]">
+                      <span className="text-xs text-[#6C4A32]">{t('templateEditor.preview.subtotal', { defaultValue: 'Subtotal' })}:</span>
+                      <span className="text-xs font-semibold text-[#8A3B12]">
                         ${calculateSubtotal().toFixed(2)}
                       </span>
                     </div>
                     {shouldShowTax && (
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-[#6C4A32]">{t('templateEditor.preview.tax', { defaultValue: 'Tax' })}:</span>
-                        <span className="text-sm font-semibold text-[#8A3B12]">
+                        <span className="text-xs text-[#6C4A32]">{t('templateEditor.preview.tax', { defaultValue: 'Tax' })}:</span>
+                        <span className="text-xs font-semibold text-[#8A3B12]">
                           ${taxValue.toFixed(2)}
                         </span>
                       </div>
                     )}
-                    <div className="flex justify-between items-center pt-2 border-t-2 border-[#8A3B12]">
-                      <span className="text-base font-semibold text-[#8A3B12]">{t('templateEditor.preview.totalEstimate')}</span>
-                      <span className="text-xl font-bold text-[#F15A24]">
+                    <div className="flex justify-between items-center pt-1.5 border-t border-[#8A3B12]">
+                      <span className="text-sm font-semibold text-[#8A3B12]">{t('templateEditor.preview.totalEstimate')}</span>
+                      <span className="text-lg font-bold text-[#F15A24]">
                         ${calculateTotal().toFixed(2)}
                       </span>
                     </div>

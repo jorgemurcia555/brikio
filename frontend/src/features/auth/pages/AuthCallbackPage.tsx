@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../../../stores/authStore';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import axios from 'axios';
 
 export function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -15,16 +16,29 @@ export function AuthCallbackPage() {
     const refreshToken = searchParams.get('refreshToken');
 
     if (token && refreshToken) {
+      // Get API URL - VITE_API_URL should already include /api/v1
+      // If not, we'll add it
+      let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+      
+      // Remove trailing slash
+      API_URL = API_URL.replace(/\/$/, '');
+      
+      // If API_URL doesn't end with /api/v1, add it
+      if (!API_URL.endsWith('/api/v1')) {
+        API_URL = `${API_URL}/api/v1`;
+      }
+      
       // Fetch user data with the token
-      fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/auth/me`, {
+      axios.get(`${API_URL}/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.data?.user) {
-            setAuth(data.data.user, token, refreshToken);
+        .then((res) => {
+          const data = res.data;
+          if (data.data?.user || data.user) {
+            const user = data.data?.user || data.user;
+            setAuth(user, token, refreshToken);
             toast.success(t('login.success'));
             
             // Check if user was registering to download a guest project

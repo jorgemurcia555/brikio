@@ -948,6 +948,10 @@ export function TemplateEditor({ lineItems, onLineItemsChange, selectedTrade, pr
                   signature,
                   theme: selectedTheme,
                 }}
+                profitMarginPercent={profitMarginPercent}
+                onProfitMarginChange={setProfitMarginPercent}
+                taxEnabled={taxEnabled}
+                onTaxEnabledChange={setTaxEnabled}
               />
             </div>
           </div>

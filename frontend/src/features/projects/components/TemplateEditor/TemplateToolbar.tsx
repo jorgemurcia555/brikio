@@ -91,8 +91,8 @@ export function TemplateToolbar({
   const sortedSections = [...sections].sort((a, b) => a.order - b.order);
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>('black');
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('classic');
-  const [activeTool, setActiveTool] = useState<'theme' | 'templates' | 'profitMargin' | 'sections' | null>(null);
-  const [activeSection, setActiveSection] = useState<TemplateSectionId | null>(null);
+  const [activeTool, setActiveTool] = useState<'theme' | 'templates' | 'sections' | null>(null);
+  const [activeSection, setActiveSection] = useState<TemplateSectionId | 'tax' | null>(null);
   
   const THEMES = getThemes(t);
   const TEMPLATES = getTemplates(t);
@@ -185,23 +185,85 @@ export function TemplateToolbar({
           </div>
         </div>
 
-        {/* Profit Margin Tool */}
-        <div className="relative group">
-          <button
-            onClick={() => setActiveTool(activeTool === 'profitMargin' ? null : 'profitMargin')}
-            className={`flex flex-col items-center gap-1 p-2.5 rounded-xl transition-all ${
-              activeTool === 'profitMargin' 
-                ? 'bg-[#F15A24] text-white' 
-                : 'text-[#8A3B12] hover:bg-[#FFF7EA]'
-            }`}
-          >
-            <Calculator className={`w-5 h-5 ${activeTool === 'profitMargin' ? 'text-white' : 'text-[#F15A24]'}`} />
-            <span className="text-[9px] font-medium leading-tight text-center">Tax</span>
-          </button>
-          <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-[#8A3B12] text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
-            {t('templateEditor.toolbar.profitMargin')}
+        {/* Tax Tool - Floating button like sections */}
+        {isAuthenticated && (
+          <div className="relative">
+            <motion.button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveSection(activeSection === 'tax' ? null : 'tax');
+              }}
+              className={`section-button flex flex-col items-center gap-1 p-2.5 rounded-xl transition-all cursor-pointer touch-manipulation w-full ${
+                taxEnabled 
+                  ? 'text-[#8A3B12] hover:bg-[#FFF7EA] active:bg-[#F4C197]' 
+                  : 'text-[#8A3B12] hover:bg-[#FFF7EA] active:bg-[#F4C197] opacity-40'
+              } ${activeSection === 'tax' ? 'bg-[#FFF7EA]' : ''}`}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+            >
+              <Calculator className={`w-5 h-5 ${taxEnabled ? 'text-[#F15A24]' : 'text-[#C05A2B]'}`} />
+              <span className="text-[9px] font-medium leading-tight text-center">Tax</span>
+            </motion.button>
+            {/* Floating panel for Tax */}
+            {activeSection === 'tax' && (
+              <>
+                {/* Mobile overlay - only closes panel, doesn't block events */}
+                <div 
+                  className="sm:hidden fixed inset-0 bg-black/20 z-[55]"
+                  onClick={(e) => {
+                    // Only close if clicking on overlay itself, not on children
+                    if (e.target === e.currentTarget) {
+                      setActiveSection(null);
+                    }
+                  }}
+                />
+                <div 
+                  className="toolbar-panel fixed sm:absolute left-16 sm:left-full top-1/2 sm:top-0 -translate-y-1/2 sm:translate-y-0 ml-0 sm:ml-2 bg-white border-2 border-[#F4C197] rounded-xl shadow-xl z-[60] min-w-[200px] max-w-[calc(100vw-5rem)] sm:max-w-none p-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-[#8A3B12]">{t('templateEditor.toolbar.tax')}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTaxEnabledChange?.(!taxEnabled);
+                      }}
+                      className={`p-1.5 rounded-lg transition-colors tour-hide-show ${
+                        taxEnabled 
+                          ? 'bg-[#F15A24] text-white hover:bg-[#C05A2B]' 
+                          : 'bg-[#F4C197] text-[#8A3B12] hover:bg-[#F15A24] hover:text-white'
+                      }`}
+                      title={taxEnabled ? t('templateEditor.toolbar.hideSection') : t('templateEditor.toolbar.showSection')}
+                    >
+                      {taxEnabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  <div className="space-y-3 pt-2 border-t border-[#F4C197]">
+                    <div>
+                      <label className="block text-xs font-medium text-[#8A3B12] mb-2">
+                        {t('templateEditor.toolbar.taxPercent')} (%)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        value={profitMarginPercent}
+                        onChange={(e) => onProfitMarginChange?.(parseFloat(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border-2 border-[#F4C197] rounded-lg focus:border-[#F15A24] focus:outline-none text-[#8A3B12] text-sm"
+                      />
+                      <p className="text-xs text-[#6C4A32] mt-1">
+                        {t('templateEditor.toolbar.taxDesc')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Sections - Individual buttons with click to open panel */}
         {sortedSections.map((section) => {
@@ -309,9 +371,9 @@ export function TemplateToolbar({
         })}
       </div>
 
-      {/* Expandable Panel for Theme, Templates, and Profit Margin */}
+      {/* Expandable Panel for Theme and Templates */}
       <AnimatePresence>
-        {activeTool && (activeTool === 'theme' || activeTool === 'templates' || activeTool === 'profitMargin') && (
+        {activeTool && (activeTool === 'theme' || activeTool === 'templates') && (
           <motion.div
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 280, opacity: 1 }}
@@ -342,53 +404,6 @@ export function TemplateToolbar({
                         <span className="text-sm font-semibold">{theme.label}</span>
                       </button>
                     ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Tax Panel */}
-              {activeTool === 'profitMargin' && (
-                <div>
-                  <h3 className="text-lg font-display text-[#8A3B12] font-bold mb-4">{t('templateEditor.toolbar.tax')}</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-[#8A3B12] mb-2">
-                        {t('templateEditor.toolbar.taxPercent')} (%)
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        value={profitMarginPercent}
-                        onChange={(e) => onProfitMarginChange?.(parseFloat(e.target.value) || 0)}
-                        className="w-full px-4 py-2 border-2 border-[#F4C197] rounded-lg focus:border-[#F15A24] focus:outline-none text-[#8A3B12]"
-                      />
-                      <p className="text-xs text-[#6C4A32] mt-2">
-                        {t('templateEditor.toolbar.taxDesc')}
-                      </p>
-                    </div>
-                    {isAuthenticated && (
-                      <div className="mt-4 pt-4 border-t border-[#F4C197]">
-                        <label className="flex items-start gap-3 cursor-pointer py-2 -mx-2 px-2 rounded-lg hover:bg-[#FFF7EA] transition-colors touch-manipulation">
-                          <input
-                            type="checkbox"
-                            checked={taxEnabled}
-                            onChange={(e) => onTaxEnabledChange?.(e.target.checked)}
-                            className="w-6 h-6 sm:w-5 sm:h-5 text-[#F15A24] border-2 border-[#F4C197] rounded focus:ring-2 focus:ring-[#F15A24] focus:ring-offset-2 mt-0.5 flex-shrink-0 cursor-pointer touch-manipulation"
-                            style={{ minWidth: '24px', minHeight: '24px' }}
-                          />
-                          <div className="flex-1">
-                            <span className="text-sm sm:text-base font-medium text-[#8A3B12] block">
-                              {t('templateEditor.toolbar.enableTax')}
-                            </span>
-                            <p className="text-xs text-[#6C4A32] mt-1">
-                              {t('templateEditor.toolbar.enableTaxDesc')}
-                            </p>
-                          </div>
-                        </label>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}

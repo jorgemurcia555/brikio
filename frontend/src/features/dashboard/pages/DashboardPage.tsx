@@ -21,6 +21,11 @@ export function DashboardPage() {
     queryFn: () => api.get('/projects'), // Backend still uses /projects endpoint
   });
 
+  const { data: allEstimates } = useQuery({
+    queryKey: ['estimates', 'all'],
+    queryFn: () => api.get('/estimates'),
+  });
+
   const stats = [
     {
       name: t('dashboard.stats.totalProjects'),
@@ -143,14 +148,48 @@ export function DashboardPage() {
         <Card>
           <h2 className="text-xl font-bold text-secondary-900 mb-4">Estimates Overview</h2>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={[
-              { month: 'Jan', estimates: 5, approved: 3 },
-              { month: 'Feb', estimates: 8, approved: 6 },
-              { month: 'Mar', estimates: 12, approved: 9 },
-              { month: 'Apr', estimates: metrics?.data?.totalEstimates || 0, approved: metrics?.data?.totalEstimates ? (metrics.data.totalEstimates * 0.75) : 0 },
-              { month: 'May', estimates: 15, approved: 12 },
-              { month: 'Jun', estimates: 18, approved: 15 },
-            ]}>
+            <BarChart data={(() => {
+              // Get estimates data (handle both array and object with data property)
+              const estimates = Array.isArray(allEstimates) ? allEstimates : (allEstimates?.data || []);
+              
+              // Group estimates by month
+              const monthData: Record<string, { estimates: number; approved: number }> = {};
+              const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              
+              // Initialize last 6 months
+              const last6Months = [];
+              const now = new Date();
+              for (let i = 5; i >= 0; i--) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const monthName = monthNames[date.getMonth()];
+                last6Months.push({ key: monthKey, name: monthName });
+                monthData[monthKey] = { estimates: 0, approved: 0 };
+              }
+              
+              // Count estimates by month
+              if (Array.isArray(estimates)) {
+                estimates.forEach((estimate: any) => {
+                  if (estimate.createdAt) {
+                    const date = new Date(estimate.createdAt);
+                    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    if (monthData[monthKey]) {
+                      monthData[monthKey].estimates++;
+                      if (estimate.status === 'approved') {
+                        monthData[monthKey].approved++;
+                      }
+                    }
+                  }
+                });
+              }
+              
+              // Convert to chart data format
+              return last6Months.map(({ key, name }) => ({
+                month: name,
+                estimates: monthData[key].estimates,
+                approved: monthData[key].approved,
+              }));
+            })()}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />

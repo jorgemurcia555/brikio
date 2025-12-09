@@ -11,11 +11,13 @@ export function MainLayout() {
       <Sidebar />
       <div
         className={`transition-all duration-300 ${
-          sidebarOpen ? 'ml-64' : 'ml-20'
+          sidebarOpen 
+            ? 'ml-0 md:ml-[256px]' 
+            : 'ml-0 md:ml-20'
         }`}
       >
         <Header />
-        <main className="p-6">
+        <main className="p-3 sm:p-4 md:p-6">
           <Outlet />
         </main>
       </div>
