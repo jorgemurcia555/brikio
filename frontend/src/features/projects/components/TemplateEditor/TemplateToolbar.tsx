@@ -370,20 +370,23 @@ export function TemplateToolbar({
                     </div>
                     {isAuthenticated && (
                       <div className="mt-4 pt-4 border-t border-[#F4C197]">
-                        <label className="flex items-center gap-2 cursor-pointer">
+                        <label className="flex items-start gap-3 cursor-pointer py-2 -mx-2 px-2 rounded-lg hover:bg-[#FFF7EA] transition-colors touch-manipulation">
                           <input
                             type="checkbox"
                             checked={taxEnabled}
                             onChange={(e) => onTaxEnabledChange?.(e.target.checked)}
-                            className="w-4 h-4 text-[#F15A24] border-2 border-[#F4C197] rounded focus:ring-[#F15A24]"
+                            className="w-6 h-6 sm:w-5 sm:h-5 text-[#F15A24] border-2 border-[#F4C197] rounded focus:ring-2 focus:ring-[#F15A24] focus:ring-offset-2 mt-0.5 flex-shrink-0 cursor-pointer touch-manipulation"
+                            style={{ minWidth: '24px', minHeight: '24px' }}
                           />
-                          <span className="text-sm font-medium text-[#8A3B12]">
-                            {t('templateEditor.toolbar.enableTax')}
-                          </span>
+                          <div className="flex-1">
+                            <span className="text-sm sm:text-base font-medium text-[#8A3B12] block">
+                              {t('templateEditor.toolbar.enableTax')}
+                            </span>
+                            <p className="text-xs text-[#6C4A32] mt-1">
+                              {t('templateEditor.toolbar.enableTaxDesc')}
+                            </p>
+                          </div>
                         </label>
-                        <p className="text-xs text-[#6C4A32] mt-1 ml-6">
-                          {t('templateEditor.toolbar.enableTaxDesc')}
-                        </p>
                       </div>
                     )}
                   </div>
