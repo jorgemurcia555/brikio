@@ -5,11 +5,12 @@ import { EstimatesService } from './estimates.service';
 import { Estimate } from '../../database/entities/estimate.entity';
 import { EstimateItem } from '../../database/entities/estimate-item.entity';
 import { Project } from '../../database/entities/project.entity';
+import { Unit } from '../../database/entities/unit.entity';
 import { BillingModule } from '../billing/billing.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Estimate, EstimateItem, Project]),
+    TypeOrmModule.forFeature([Estimate, EstimateItem, Project, Unit]),
     BillingModule,
   ],
   controllers: [EstimatesController],

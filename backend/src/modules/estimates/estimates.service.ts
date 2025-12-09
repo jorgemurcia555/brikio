@@ -2,12 +2,14 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Estimate, EstimateStatus } from '../../database/entities/estimate.entity';
 import { EstimateItem } from '../../database/entities/estimate-item.entity';
 import { Project } from '../../database/entities/project.entity';
+import { Unit } from '../../database/entities/unit.entity';
 import { BillingService } from '../billing/billing.service';
 import { CreateEstimateDto } from './dto/create-estimate.dto';
 import { UpdateEstimateDto } from './dto/update-estimate.dto';
@@ -21,6 +23,8 @@ export class EstimatesService {
     private estimateItemsRepository: Repository<EstimateItem>,
     @InjectRepository(Project)
     private projectsRepository: Repository<Project>,
+    @InjectRepository(Unit)
+    private unitsRepository: Repository<Unit>,
     private billingService: BillingService,
   ) {}
 
@@ -95,8 +99,22 @@ export class EstimatesService {
 
     const version = lastEstimate ? lastEstimate.version + 1 : 1;
 
-    // Increment usage count after successful creation
-    await this.billingService.incrementUsage(userId);
+    // Validate that all unitIds exist if items are provided
+    if (createEstimateDto.items && createEstimateDto.items.length > 0) {
+      const unitIds = createEstimateDto.items.map(item => item.unitId);
+      const uniqueUnitIds = [...new Set(unitIds)];
+      const existingUnits = await this.unitsRepository.find({
+        where: { id: In(uniqueUnitIds) },
+      });
+      
+      if (existingUnits.length !== uniqueUnitIds.length) {
+        const existingUnitIds = new Set(existingUnits.map(u => u.id));
+        const missingUnitIds = uniqueUnitIds.filter(id => !existingUnitIds.has(id));
+        throw new BadRequestException(
+          `Invalid unit IDs: ${missingUnitIds.join(', ')}. Please ensure all units exist.`
+        );
+      }
+    }
 
     const estimate = this.estimatesRepository.create({
       project,
@@ -109,7 +127,7 @@ export class EstimatesService {
 
     const savedEstimate = await this.estimatesRepository.save(estimate);
 
-    // Increment usage count
+    // Increment usage count only once after successful creation
     await this.billingService.incrementUsage(userId);
 
     return savedEstimate;

@@ -114,14 +114,24 @@ export function GuestProjectPage() {
   }, [isAuthenticated, dataRestored, searchParams, t]);
 
   // Fetch units for mapping unit strings to unitIds
-  const { data: unitsResponse } = useQuery({
+  const { data: unitsResponse, isLoading: isLoadingUnits, error: unitsError } = useQuery({
     queryKey: ['units'],
-    queryFn: () => api.get('/materials/units'),
+    queryFn: async () => {
+      try {
+        const response = await api.get('/materials/units');
+        return response;
+      } catch (error: any) {
+        console.error('Error fetching units:', error);
+        throw error;
+      }
+    },
     enabled: isAuthenticated,
+    retry: 3, // Retry 3 times if it fails
+    retryDelay: 1000, // Wait 1 second between retries
   });
   
   // Extract units from response (API interceptor returns response.data)
-  const units = unitsResponse?.data || unitsResponse;
+  const units = unitsResponse?.data || unitsResponse || [];
 
   // Trigger download after data is restored and user is authenticated
   useEffect(() => {
@@ -312,14 +322,51 @@ export function GuestProjectPage() {
     try {
       toast.loading(t('guestProject.download.creating'));
 
-      // Find a default unit (m²) or use the first available
-      const defaultUnit = units?.find((u: any) => 
-        u.symbol?.toLowerCase() === 'm²' || 
-        u.name?.toLowerCase().includes('square meter') ||
-        u.symbol?.toLowerCase() === 'm2'
-      ) || units?.[0];
+      // Wait for units to load if they're still loading (max 5 seconds)
+      if (isLoadingUnits) {
+        toast.loading('Loading units...');
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max
+        while (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+          // Check if units are now loaded
+          const currentUnits = unitsResponse?.data || unitsResponse || [];
+          if (currentUnits && Array.isArray(currentUnits) && currentUnits.length > 0) {
+            break;
+          }
+        }
+      }
 
-      if (!defaultUnit) {
+      // Re-fetch units from response after waiting
+      const currentUnits = unitsResponse?.data || unitsResponse || [];
+
+      // Check if units loaded successfully
+      if (unitsError) {
+        console.error('Error loading units:', unitsError);
+        toast.error(t('guestProject.download.noUnits'));
+        return;
+      }
+
+      // Check if units array is empty or undefined
+      if (!currentUnits || !Array.isArray(currentUnits) || currentUnits.length === 0) {
+        console.error('No units available:', currentUnits);
+        toast.error(t('guestProject.download.noUnits'));
+        return;
+      }
+
+      // Find a default unit (m²) or use the first available
+      const defaultUnit = currentUnits.find((u: any) => 
+        u.symbol?.toLowerCase() === 'm²' || 
+        u.abbreviation?.toLowerCase() === 'm²' ||
+        u.name?.toLowerCase().includes('square meter') ||
+        u.name?.toLowerCase().includes('metro cuadrado') ||
+        u.symbol?.toLowerCase() === 'm2' ||
+        u.abbreviation?.toLowerCase() === 'm2'
+      ) || currentUnits[0];
+
+      if (!defaultUnit || !defaultUnit.id) {
+        console.error('No valid default unit found:', defaultUnit);
         toast.error(t('guestProject.download.noUnits'));
         return;
       }
@@ -339,11 +386,25 @@ export function GuestProjectPage() {
 
       // Map line items to estimate items format
       const estimateItems = lineItems.map((item) => {
-        // Try to find matching unit by symbol or name
-        const unit = units?.find((u: any) => 
+        // Try to find matching unit by symbol, abbreviation, or name
+        const unit = currentUnits.find((u: any) => 
           u.symbol?.toLowerCase() === item.unit?.toLowerCase() ||
+          u.abbreviation?.toLowerCase() === item.unit?.toLowerCase() ||
           u.name?.toLowerCase() === item.unit?.toLowerCase()
         ) || defaultUnit;
+
+        // Ensure unit has an id
+        if (!unit || !unit.id) {
+          console.warn('No valid unit found for item, using default:', item, unit);
+          return {
+            description: item.description,
+            quantity: item.quantity,
+            unitId: defaultUnit.id,
+            unitCost: item.unitPrice,
+            subtotal: item.quantity * item.unitPrice,
+            tax: 0,
+          };
+        }
 
         const subtotal = item.quantity * item.unitPrice;
         // Calculate tax if taxEnabled is true

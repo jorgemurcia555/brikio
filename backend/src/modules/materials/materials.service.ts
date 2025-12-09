@@ -110,7 +110,32 @@ export class MaterialsService {
   }
 
   async getUnits(): Promise<Unit[]> {
-    return this.unitsRepository.find();
+    const units = await this.unitsRepository.find({
+      order: { name: 'ASC' },
+    });
+    
+    // If no units exist, seed them automatically
+    if (units.length === 0) {
+      console.warn('⚠️  No units found in database. Seeding default units...');
+      const defaultUnits = [
+        { name: 'Metro cuadrado', abbreviation: 'm²', conversionFactor: 1 },
+        { name: 'Metro lineal', abbreviation: 'ml', conversionFactor: 1 },
+        { name: 'Metro cúbico', abbreviation: 'm³', conversionFactor: 1 },
+        { name: 'Kilogramo', abbreviation: 'kg', conversionFactor: 1 },
+        { name: 'Saco', abbreviation: 'saco', conversionFactor: 1 },
+        { name: 'Pieza', abbreviation: 'pza', conversionFactor: 1 },
+        { name: 'Litro', abbreviation: 'l', conversionFactor: 1 },
+        { name: 'Tonelada', abbreviation: 'ton', conversionFactor: 1000 },
+      ];
+      
+      const createdUnits = await this.unitsRepository.save(
+        defaultUnits.map((u) => this.unitsRepository.create(u)),
+      );
+      console.log(`✅ Created ${createdUnits.length} default units`);
+      return createdUnits;
+    }
+    
+    return units;
   }
 }
 
