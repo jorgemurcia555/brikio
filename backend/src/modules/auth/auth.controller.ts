@@ -64,14 +64,36 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
-    const user = req.user as any;
-    const result = await this.authService.validateGoogleUser(user);
+    try {
+      const user = req.user as any;
+      const result = await this.authService.validateGoogleUser(user);
 
-    // Redirect to frontend with tokens
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const redirectUrl = `${frontendUrl}/auth/callback?token=${result.accessToken}&refreshToken=${result.refreshToken}`;
-    
-    res.redirect(redirectUrl);
+      // Redirect to frontend with tokens
+      // Ensure FRONTEND_URL has protocol (https:// or http://)
+      let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      
+      // If FRONTEND_URL doesn't start with http:// or https://, add https://
+      if (!frontendUrl.startsWith('http://') && !frontendUrl.startsWith('https://')) {
+        frontendUrl = `https://${frontendUrl}`;
+      }
+      
+      // Remove trailing slash if present
+      frontendUrl = frontendUrl.replace(/\/$/, '');
+      
+      const redirectUrl = `${frontendUrl}/auth/callback?token=${result.accessToken}&refreshToken=${result.refreshToken}`;
+      
+      console.log('🔐 Redirecting to frontend:', redirectUrl);
+      res.redirect(redirectUrl);
+    } catch (error) {
+      console.error('❌ Error in Google OAuth callback:', error);
+      // Redirect to frontend login page with error
+      let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      if (!frontendUrl.startsWith('http://') && !frontendUrl.startsWith('https://')) {
+        frontendUrl = `https://${frontendUrl}`;
+      }
+      frontendUrl = frontendUrl.replace(/\/$/, '');
+      res.redirect(`${frontendUrl}/login?error=oauth_failed`);
+    }
   }
 
   @UseGuards(JwtAuthGuard)
